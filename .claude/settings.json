@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log PreToolUse events for analysis"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log PostToolUse events for analysis"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log user prompt submissions"
+          }
+        ]
+      }
+    ]
+  },
+  "memory": {
+    "enabled": true,
+    "maxTokens": 100000
+  },
+  "editor": {
+    "autoSave": true,
+    "formatOnSave": true
+  }
+} 

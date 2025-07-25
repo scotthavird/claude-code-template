@@ -1,0 +1,76 @@
+{
+  "description": "Example hook configurations for different use cases",
+  "examples": {
+    "basic_logging": {
+      "hooks": {
+        "PostToolUse": [
+          {
+            "matcher": "*",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash scripts/log-hook-event.sh",
+                "description": "Log all tool usage"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "file_operations_only": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "edit_file|read_file|delete_file",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash scripts/log-file-operations.sh",
+                "description": "Log only file operations"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "approval_required": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "run_terminal_cmd",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash scripts/require-approval.sh",
+                "description": "Require approval for terminal commands"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "notification_system": {
+      "hooks": {
+        "PostToolUse": [
+          {
+            "matcher": "edit_file",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash scripts/notify-file-changes.sh",
+                "description": "Notify team of file changes"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "usage_notes": [
+    "Copy the desired configuration to .claude/settings.json",
+    "Modify matchers to target specific tools or patterns",
+    "Create corresponding scripts in the scripts/ directory",
+    "Test hooks thoroughly before deploying to production",
+    "Use .claude/settings.local.json for environment-specific configs"
+  ]
+} 

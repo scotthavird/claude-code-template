@@ -1,0 +1,31 @@
+{
+  "name": "claude-code-template",
+  "version": "1.0.0",
+  "description": "A barebones starter template for Claude Code projects with devcontainer support and comprehensive logging",
+  "main": "index.js",
+  "scripts": {
+    "analyze": "python3 scripts/analyze-logs.py",
+    "analyze:tool": "python3 scripts/analyze-logs.py --tool",
+    "analyze:event": "python3 scripts/analyze-logs.py --event",
+    "setup": "chmod +x scripts/*.sh .devcontainer/*.sh",
+    "clean-logs": "rm -rf logs/*.jsonl"
+  },
+  "keywords": [
+    "claude-code",
+    "template",
+    "devcontainer",
+    "hooks",
+    "logging",
+    "data-science"
+  ],
+  "author": "Scott Havird",
+  "license": "MIT",
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scotthavird/claude-code-template.git"
+  }
+} 
