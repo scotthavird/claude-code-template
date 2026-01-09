@@ -1,5 +1,47 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npm test:*)",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(yarn:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(docker:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Read(./)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(./secrets/**)",
+      "Read(**/*secret*)",
+      "Read(**/*credential*)",
+      "Bash(rm -rf:*)"
+    ]
+  },
+
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log session start for analysis"
+          }
+        ]
+      }
+    ],
+
     "PreToolUse": [
       {
         "matcher": "*",
@@ -12,6 +54,7 @@
         ]
       }
     ],
+
     "PostToolUse": [
       {
         "matcher": "*",
@@ -22,11 +65,22 @@
             "description": "Log PostToolUse events for analysis"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/validate-edit.sh 2>/dev/null || true",
+            "description": "Validate file edits (optional)"
+          }
+        ]
       }
     ],
+
     "UserPromptSubmit": [
       {
-        "matcher": "*",
+        "matcher": "",
         "hooks": [
           {
             "type": "command",
@@ -35,14 +89,47 @@
           }
         ]
       }
+    ],
+
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log notifications"
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-hook-event.sh",
+            "description": "Log session stops"
+          }
+        ]
+      }
     ]
   },
+
+  "env": {
+    "NODE_ENV": "development",
+    "LOG_LEVEL": "info"
+  },
+
   "memory": {
     "enabled": true,
     "maxTokens": 100000
   },
+
   "editor": {
     "autoSave": true,
     "formatOnSave": true
   }
-} 
+}

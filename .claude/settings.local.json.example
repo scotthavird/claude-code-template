@@ -1,0 +1,32 @@
+{
+  "// INSTRUCTIONS": "Copy this file to settings.local.json and customize for your local environment",
+  "// NOTE": "This file is gitignored and should contain personal/sensitive configuration",
+
+  "env": {
+    "GITHUB_TOKEN": "your-github-token-here",
+    "OPENAI_API_KEY": "your-openai-key-if-needed",
+    "DATABASE_URL": "your-local-database-url"
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash(docker:*)",
+      "Bash(kubectl:*)"
+    ]
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Local session started'",
+            "description": "Personal session startup hook"
+          }
+        ]
+      }
+    ]
+  }
+}
