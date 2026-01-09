@@ -12,6 +12,10 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 fi
 
+# Install Claude Code globally
+echo "Installing Claude Code..."
+npm install -g @anthropic-ai/claude-code
+
 # Create logs directory for hook outputs
 mkdir -p logs
 chmod 755 logs
@@ -31,7 +35,11 @@ echo "Claude Code Template environment setup complete!"
 echo ""
 echo "Available features:"
 echo "   • Custom slash commands in .claude/commands/"
+echo "   • Skills (auto-triggered) in .claude/skills/"
+echo "   • Custom agents in .claude/agents/"
 echo "   • Hook examples with JSON logging in .claude/settings.json"
 echo "   • Log analysis in logs/ directory"
 echo ""
-echo "Try running: /analyze-project to see the custom command in action" 
+echo "To get started:"
+echo "   1. Run 'claude' to start Claude Code"
+echo "   2. Try the custom command: /analyze-project"
