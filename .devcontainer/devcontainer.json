@@ -3,33 +3,45 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "customizations": {
     "vscode": {
       "extensions": [
+        "anthropic.claude-code",
         "ms-vscode.vscode-json",
-        "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
         "ms-python.python",
-        "ms-vscode.powershell"
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "github.vscode-github-actions",
+        "github.vscode-pull-request-github"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll": true
+          "source.fixAll": "explicit"
         }
       }
     }
   },
-  "forwardPorts": [3000, 8000, 8080],
+  "forwardPorts": [3000, 5173, 8000, 8080],
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "remoteUser": "node",
   "mounts": [
-    "source=claude-code-template-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+    "source=claude-code-template-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached"
   ],
   "runArgs": [
-    "--init"
-  ]
-} 
+    "--init",
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  }
+}

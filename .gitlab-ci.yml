@@ -1,0 +1,27 @@
+# Claude Code integration for GitLab CI.
+# Requires ANTHROPIC_API_KEY as a masked CI/CD variable.
+# See https://code.claude.com/docs/en/gitlab-ci-cd for the full reference.
+
+stages:
+  - review
+
+claude-review:
+  stage: review
+  image: node:20-bullseye
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - npm install -g @anthropic-ai/claude-code
+  script:
+    - |
+      git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      git diff "origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD" > /tmp/diff.patch
+      claude -p --output-format text --permission-mode plan \
+        "Review this MR. Flag correctness, security, and test coverage issues. Use BLOCKER/MAJOR/MINOR tags with file:line references." \
+        < /tmp/diff.patch > /tmp/review.md
+      cat /tmp/review.md
+      # Post as MR note via the GitLab API.
+      curl -sS --request POST \
+        --header "PRIVATE-TOKEN: $GITLAB_API_TOKEN" \
+        --form "body=$(cat /tmp/review.md)" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/merge_requests/$CI_MERGE_REQUEST_IID/notes"

@@ -1,0 +1,17 @@
+{
+  "name": "claude-code-template-sdk-example",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Agent SDK starter (TypeScript) for the claude-code-template.",
+  "scripts": {
+    "example": "tsx example.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

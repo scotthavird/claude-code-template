@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "claude-code-template",
+  "version": "0.2.0",
+  "description": "A comprehensive Claude Code starter template: devcontainer, commands, skills, subagents, plugin scaffolding, hooks, MCP, CI/CD, and SDK examples.",
+  "author": {
+    "name": "Scott Havird",
+    "url": "https://github.com/scotthavird"
+  },
+  "homepage": "https://github.com/scotthavird/claude-code-template",
+  "repository": "https://github.com/scotthavird/claude-code-template",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "template",
+    "devcontainer",
+    "starter",
+    "hooks",
+    "skills",
+    "subagents"
+  ],
+  "components": {
+    "commands": ".claude/commands",
+    "agents": ".claude/agents",
+    "skills": ".claude/skills",
+    "hooks": ".claude/settings.json",
+    "outputStyles": ".claude/output-styles",
+    "statusLine": ".claude/statusline/statusline.sh",
+    "mcpServers": ".mcp.json"
+  }
+}
