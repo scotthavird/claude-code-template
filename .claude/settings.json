@@ -1,22 +1,32 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Bash(npm run:*)",
       "Bash(npm test:*)",
       "Bash(npm install:*)",
+      "Bash(npm ci:*)",
       "Bash(npx:*)",
       "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(bun:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
       "Bash(docker:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
-      "Bash(cat:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
       "Bash(grep:*)",
-      "Read(./)"
+      "Bash(rg:*)",
+      "Bash(tree:*)",
+      "Bash(pytest:*)",
+      "Bash(python3:*)",
+      "Bash(pip:*)",
+      "Bash(make:*)",
+      "Bash(go test:*)",
+      "Bash(cargo:*)"
     ],
     "deny": [
       "Read(.env)",
@@ -24,8 +34,18 @@
       "Read(./secrets/**)",
       "Read(**/*secret*)",
       "Read(**/*credential*)",
-      "Bash(rm -rf:*)"
+      "Read(**/id_rsa)",
+      "Read(**/id_ed25519)",
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:* | sh)",
+      "Bash(curl:* | bash)"
     ]
+  },
+
+  "statusLine": {
+    "type": "command",
+    "command": ".claude/statusline/statusline.sh"
   },
 
   "hooks": {
@@ -37,6 +57,11 @@
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
             "description": "Log session start for analysis"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/inject-context.sh",
+            "description": "Inject project context (branch, recent commits)"
           }
         ]
       }
@@ -49,7 +74,17 @@
           {
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
-            "description": "Log PreToolUse events for analysis"
+            "description": "Log PreToolUse events"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/block-dangerous-bash.sh",
+            "description": "Block destructive bash patterns"
           }
         ]
       }
@@ -62,17 +97,17 @@
           {
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
-            "description": "Log PostToolUse events for analysis"
+            "description": "Log PostToolUse events"
           }
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/validate-edit.sh 2>/dev/null || true",
-            "description": "Validate file edits (optional)"
+            "command": "bash scripts/hooks/format-on-save.sh",
+            "description": "Run formatter on edited files"
           }
         ]
       }
@@ -85,7 +120,7 @@
           {
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
-            "description": "Log user prompt submissions"
+            "description": "Log user prompts"
           }
         ]
       }
@@ -111,7 +146,12 @@
           {
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
-            "description": "Log session stops"
+            "description": "Log session end"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/session-cost.sh",
+            "description": "Surface session cost summary"
           }
         ]
       }
@@ -119,17 +159,12 @@
   },
 
   "env": {
-    "NODE_ENV": "development",
-    "LOG_LEVEL": "info"
+    "NODE_ENV": "development"
   },
 
-  "memory": {
-    "enabled": true,
-    "maxTokens": 100000
-  },
+  "includeCoAuthoredBy": true,
+  "cleanupPeriodDays": 30,
 
-  "editor": {
-    "autoSave": true,
-    "formatOnSave": true
-  }
+  "enableAllProjectMcpServers": false,
+  "enabledMcpjsonServers": ["filesystem", "git", "fetch"]
 }

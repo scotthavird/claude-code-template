@@ -1,21 +1,28 @@
 {
   "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "description": "GitHub integration for repository management, issues, and PRs"
-    },
     "filesystem": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic/mcp-server-filesystem", "./"],
-      "description": "Enhanced filesystem operations"
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."],
+      "description": "Sandboxed filesystem access rooted at the project directory"
     },
     "memory": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic/mcp-server-memory"],
-      "description": "Persistent memory across sessions"
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "description": "Persistent knowledge graph memory across sessions"
+    },
+    "git": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "."],
+      "description": "Git operations (log, diff, blame, show) via MCP"
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "description": "Fetch and convert web content to markdown"
     }
   }
 }

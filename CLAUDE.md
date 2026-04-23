@@ -1,257 +1,161 @@
-# Claude Code Template Project Memory
+# Claude Code Template — Project Memory
 
-## Project Overview
+## Overview
 
-This is a comprehensive Claude Code template designed for rapid prototyping and development. It includes:
+A comprehensive, opinionated Claude Code template. Designed to be installed
+as a plugin or forked as a starting point. Everything here aligns with the
+[official Claude Code docs](https://code.claude.com/docs/en/overview).
 
-- **DevContainer Support**: Full containerized development environment
-- **Custom Slash Commands**: Multiple workflow commands (commit, pr, test, lint-fix, analyze-project)
-- **Skills**: Auto-triggered contextual helpers (code-review, db-migration)
-- **Custom Agents**: Specialized task delegation (security-auditor, doc-generator)
-- **MCP Integration**: External tool connections
-- **Hook System**: Comprehensive event logging and automation
-- **Permission Rules**: Security-first defaults
-- **Analysis Tools**: Python scripts for analyzing usage patterns
-
-## Architecture
-
-### Directory Structure
+## Directory map
 
 ```
+.claude-plugin/           plugin.json + marketplace.json → makes this installable
 .claude/
-├── commands/              # Custom slash commands
-│   ├── analyze-project.md # Project structure analysis
-│   ├── commit.md          # Smart conventional commits
-│   ├── pr.md              # Pull request creation
-│   ├── test.md            # Test runner with coverage
-│   └── lint-fix.md        # Auto-fix code style
-├── skills/                # Auto-triggered contextual helpers
-│   ├── code-review/       # Activates for code reviews
-│   │   └── SKILL.md
-│   └── db-migration/      # Activates for database work
-│       └── SKILL.md
-├── agents/                # Custom AI agents
-│   ├── security-auditor.md  # Security vulnerability scanning
-│   └── doc-generator.md     # Documentation generation
-├── settings.json          # Project-level Claude settings
-└── settings.local.json.example  # Template for local settings
-
-.devcontainer/
-├── devcontainer.json      # Container configuration
-└── post-create.sh         # Setup script
-
-.mcp.json                  # MCP server configuration
-
+├── commands/             slash commands (/commit, /pr, /review, /debug, …)
+├── agents/               subagents (security-auditor, debugger, pr-reviewer, …)
+├── skills/               auto-triggered skills (test-writing, accessibility, …)
+├── output-styles/        concise, educational, review
+├── statusline/           status line script
+├── settings.json         hooks, permissions, MCP wiring (shared)
+└── settings.local.json.example  → copy to settings.local.json (gitignored)
+.devcontainer/            devcontainer + egress firewall
+.github/workflows/        claude.yml (@claude mentions) + claude-review.yml (auto-PR review)
+.gitlab-ci.yml            GitLab CI equivalent
+.mcp.json                 project-scoped MCP servers
+docs/                     mirrored condensed versions of key official docs
+sdk/                      Agent SDK starters (TypeScript + Python)
 scripts/
-├── log-hook-event.sh      # Hook logging script
-└── analyze-logs.py        # Log analysis tool
-
-logs/                      # Generated log files (gitignored)
-├── all-hooks.jsonl        # All events
-├── hooks-YYYY-MM-DD.jsonl # Daily logs
-└── {event-type}-events.jsonl  # Event-specific logs
+├── hooks/                real hook scripts (format, block-dangerous, inject-context, cost)
+├── log-hook-event.sh     JSONL event logger
+├── analyze-logs.py       log analyzer
+└── ci-review.sh          headless-mode PR review example
 ```
 
-## Features
+## Slash commands
 
-### 1. Custom Slash Commands
+| Command | Purpose |
+|---|---|
+| `/analyze-project` | Project structure overview |
+| `/commit` | Conventional commit with auto-generated message |
+| `/pr` | Open a PR with auto-generated description |
+| `/test` | Run tests with coverage |
+| `/lint-fix` | Auto-fix linter issues |
+| `/review` | Review current branch / PR via `pr-reviewer` subagent |
+| `/security-review` | Security audit of the diff via `security-auditor` |
+| `/debug` | Trace bug to root cause via `debugger` |
+| `/refactor` | Plan a refactor via `refactor-planner` |
+| `/explain` | Explain a file / symbol / concept |
+| `/doc` | Generate docs via `doc-generator` |
+| `/implement-issue` | Read a GitHub issue and implement it end-to-end |
 
-| Command | Description | Usage |
-|---------|-------------|-------|
-| `/analyze-project` | Analyze project structure | `/analyze-project [focus-area]` |
-| `/commit` | Smart conventional commits | `/commit [type] [scope]` |
-| `/pr` | Create pull request | `/pr [base-branch]` |
-| `/test` | Run tests with coverage | `/test [pattern] [--watch]` |
-| `/lint-fix` | Auto-fix code style | `/lint-fix [path]` |
+## Subagents
 
-### 2. Skills (Auto-Triggered)
+| Agent | Purpose |
+|---|---|
+| `security-auditor` | OWASP scan, secrets detection, dependency vulns |
+| `doc-generator` | README / JSDoc / TSDoc / Python docstrings / architecture |
+| `test-runner` | Run the suite, summarize failures |
+| `pr-reviewer` | End-to-end PR review with severity tags |
+| `refactor-planner` | Sequenced, reversible refactor plan |
+| `debugger` | Root cause analysis, not symptom patching |
+| `dependency-auditor` | CVEs, deprecation, license risk |
 
-Skills automatically activate based on context:
+## Skills (auto-triggered)
 
-| Skill | Triggers When |
-|-------|---------------|
-| **code-review** | Reviewing PRs, checking code quality, preparing commits |
-| **db-migration** | Working with migrations, schema changes, ORM models |
+| Skill | Triggers on |
+|---|---|
+| `code-review` | Code review / PR / pre-commit context |
+| `db-migration` | Schema changes, ORM model work |
+| `test-writing` | Writing or discussing tests |
+| `api-design` | HTTP/REST/GraphQL/RPC interface work |
+| `performance-audit` | Profiling, optimization, hot paths |
+| `accessibility` | UI work (WCAG 2.2 AA baseline) |
 
-### 3. Custom Agents
+## Hooks
 
-Invoke agents for specialized tasks:
+Configured in `.claude/settings.json`. All hooks receive the event
+payload as JSON on stdin.
 
-| Agent | Purpose | Usage |
-|-------|---------|-------|
-| **security-auditor** | Scan for vulnerabilities, secrets, OWASP issues | Proactive security reviews |
-| **doc-generator** | Generate README, API docs, JSDoc comments | Documentation tasks |
+| Event | Script | Effect |
+|---|---|---|
+| `SessionStart` | `inject-context.sh` | Injects branch + recent commits + open PRs |
+| `PreToolUse` (Bash) | `block-dangerous-bash.sh` | Blocks `rm -rf /`, force-push to main, pipe-to-shell, etc. |
+| `PostToolUse` (Edit\|Write) | `format-on-save.sh` | Runs Prettier / Ruff / gofmt / rustfmt on the edited file |
+| `Stop` | `session-cost.sh` | Prints session cost summary to stderr |
+| All events | `log-hook-event.sh` | JSONL logging for later analysis |
 
-### 4. Hook System
+See [docs/hooks-cookbook.md](docs/hooks-cookbook.md) for details.
 
-Configured hooks (in `settings.json`):
+## Permission modes
 
-| Hook Type | Purpose |
-|-----------|---------|
-| SessionStart | Initialize session, load context |
-| PreToolUse | Log before tool execution |
-| PostToolUse | Log after execution, validate edits |
-| UserPromptSubmit | Log user prompts |
-| Notification | Log system notifications |
-| Stop | Log session end |
+Default is `default` (prompts on every unlisted Bash / file write).
+Switch per session with `/mode <name>` or `--permission-mode <name>`.
 
-### 5. Permission Rules
+See [docs/permission-modes.md](docs/permission-modes.md).
 
-Security-first permission configuration:
+## MCP servers
 
-**Allowed:**
-- npm, yarn, npx commands
-- git and gh (GitHub CLI)
-- docker commands
-- File reading and common utilities
+Declared in `.mcp.json`. Opted in via `enabledMcpjsonServers` in
+`settings.json`:
 
-**Denied:**
-- Reading `.env` files
-- Reading secrets directories
-- Destructive commands (`rm -rf`)
+| Server | What it does |
+|---|---|
+| `filesystem` | Sandboxed file access rooted at project dir |
+| `memory` | Persistent knowledge graph across sessions |
+| `git` | Git log/diff/blame/show operations |
+| `fetch` | Fetch web content as markdown |
 
-### 6. MCP Integration
+## Memory
 
-Pre-configured MCP servers (in `.mcp.json`):
+Two independent systems:
 
-| Server | Purpose |
-|--------|---------|
-| github | Repository management, issues, PRs |
-| filesystem | Enhanced file operations |
-| memory | Persistent memory across sessions |
+1. **CLAUDE.md (this file)** — committed, shared, human-authored. Acts as
+   persistent system prompt.
+2. **Auto memory** at `~/.claude/projects/.../memory/` — Claude builds
+   this as it learns about the project. Not committed. Inspect/edit it
+   directly if needed.
 
-## Usage Instructions
+## DevContainer
 
-### Getting Started
+`.devcontainer/` includes:
+- Node 20 base + Python 3.12 + Docker-in-Docker
+- VS Code extensions pre-installed (Claude Code, Prettier, ESLint, Ruff, GH Actions, GH PRs)
+- `init-firewall.sh` — egress allowlist (Anthropic API, GitHub, npm, PyPI only)
+- Mounts `~/.claude` so your global settings/auto-memory persist across rebuilds
 
-#### VS Code
-1. Install Remote-Containers extension
-2. Open repository in VS Code
-3. Select "Reopen in Container" when prompted
-4. Wait for post-create script to complete setup
+Disable the firewall with `DISABLE_CLAUDE_FIREWALL=1` if you need broader
+network access (e.g. package proxies).
 
-#### Cursor
-1. Open repository in Cursor
-2. Use Cmd+Shift+P → "Dev Containers: Reopen in Container"
-3. Wait for container build and setup to complete
+## CI/CD
 
-### Using Commands
+- **GitHub Actions** (`.github/workflows/`):
+  - `claude.yml` — `@claude` mentions in issues/PRs
+  - `claude-review.yml` — automatic review on new PRs
+- **GitLab CI** (`.gitlab-ci.yml`): equivalent MR review pipeline
+- **Headless** (`scripts/ci-review.sh`): one-shot `claude -p` example
 
-```bash
-# Analyze project
-/analyze-project
-/analyze-project security
+All require `ANTHROPIC_API_KEY` in CI secrets.
 
-# Create commits
-/commit               # Auto-detect type
-/commit feat auth     # Feature in auth scope
+## Agent SDK
 
-# Create PR
-/pr                   # Default to main
-/pr develop           # PR to develop branch
+See [`sdk/`](sdk/) for TypeScript and Python starters. Use the SDK when
+the CLI isn't the right surface (long-running services, custom tools,
+embedding the agent loop in your own product).
 
-# Run tests
-/test
-/test --coverage
-/test auth.spec.ts
+## Getting started
 
-# Fix linting
-/lint-fix
-/lint-fix src/
-```
+1. Copy `.claude/settings.local.json.example` → `.claude/settings.local.json`.
+   Put your `ANTHROPIC_API_KEY` there (or use `claude /login`).
+2. Open in VS Code / Cursor and reopen in container, OR install Claude
+   Code locally and run `claude` in the repo root.
+3. Try: `/analyze-project`, then `/review` on a branch.
 
-### Using Agents
+## Full docs
 
-Agents are automatically invoked when relevant, or you can request them:
-- "Run a security audit on this codebase"
-- "Generate documentation for the API"
-
-### Log Analysis
-
-```bash
-# Analyze all logs
-python3 scripts/analyze-logs.py
-
-# Filter by specific tool
-python3 scripts/analyze-logs.py --tool "Edit"
-
-# Filter by event type
-python3 scripts/analyze-logs.py --event "PostToolUse"
-```
-
-## Development Guidelines
-
-### Adding Custom Commands
-
-1. Create `.md` file in `.claude/commands/`
-2. Add YAML frontmatter:
-   ```yaml
-   ---
-   description: Brief description
-   argument-hint: [arg1] [arg2]
-   allowed-tools: Bash(git:*), Read, Edit
-   ---
-   ```
-3. Use `$ARGUMENTS` for dynamic content
-4. Use `!` prefix for bash command execution
-
-### Adding Skills
-
-1. Create directory in `.claude/skills/`
-2. Add `SKILL.md` with frontmatter:
-   ```yaml
-   ---
-   name: skill-name
-   description: When this skill activates
-   allowed-tools: Read, Grep, Glob
-   ---
-   ```
-3. Include comprehensive instructions
-
-### Adding Agents
-
-1. Create `.md` file in `.claude/agents/`
-2. Add YAML frontmatter:
-   ```yaml
-   ---
-   name: agent-name
-   description: What this agent does
-   tools: Read, Grep, Glob, Bash
-   model: sonnet
-   ---
-   ```
-
-### Modifying Hooks
-
-1. Edit `.claude/settings.json`
-2. Use matchers to target specific tools:
-   - `"*"` matches all
-   - `"Edit|Write"` matches multiple
-   - `"Bash"` matches exact tool
-3. Commands receive JSON input via stdin
-4. Return exit code 0 for success, 2 for blocking error
-
-### Local Configuration
-
-1. Copy `.claude/settings.local.json.example` to `.claude/settings.local.json`
-2. Add personal API keys, tokens, custom permissions
-3. This file is gitignored for security
-
-## Security Considerations
-
-- Logs may contain sensitive data - they're gitignored
-- Hook scripts run with project permissions
-- Review custom commands before sharing
-- Use `.claude/settings.local.json` for sensitive local config
-- Permission deny rules protect secrets by default
-- Never commit `.env` files or credentials
-
-## Best Practices
-
-- Keep commands focused and well-documented
-- Use descriptive names for hook scripts
-- Regularly analyze logs to optimize workflows
-- Test hooks thoroughly before deployment
-- Use skills for repeatable contextual tasks
-- Use agents for complex specialized workflows
-- Leverage MCP servers for external integrations
+- [Best practices](docs/best-practices.md)
+- [Permission modes](docs/permission-modes.md)
+- [Hooks cookbook](docs/hooks-cookbook.md)
+- [Plugins](docs/plugins.md)
+- [Agent SDK](docs/agent-sdk.md)
+- [Integrations](docs/integrations.md)
+- [`.claude/` directory](docs/claude-directory.md)

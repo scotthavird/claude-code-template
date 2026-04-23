@@ -1,20 +1,53 @@
 {
-  "// INSTRUCTIONS": "Copy this file to settings.local.json and customize for your local environment",
-  "// NOTE": "This file is gitignored and should contain personal/sensitive configuration",
+  "// INSTRUCTIONS": "Copy this file to .claude/settings.local.json and customize. It is gitignored.",
 
-  "env": {
-    "GITHUB_TOKEN": "your-github-token-here",
-    "OPENAI_API_KEY": "your-openai-key-if-needed",
-    "DATABASE_URL": "your-local-database-url"
-  },
+  "// MODEL": "Override the default model per session. Omit to inherit global/default.",
+  "model": "claude-sonnet-4-6",
 
+  "// PERMISSION_MODE": "default | acceptEdits | plan | bypassPermissions",
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Bash(docker:*)",
-      "Bash(kubectl:*)"
+      "Bash(kubectl:*)",
+      "Bash(terraform:*)"
     ]
   },
 
+  "// ADDITIONAL_DIRS": "Let Claude also read code outside the repo (monorepos, shared libs).",
+  "additionalDirectories": [
+    "~/src/shared-libs",
+    "~/src/design-system"
+  ],
+
+  "// ENV": "API keys and provider selection. See https://code.claude.com/docs/en/env-vars",
+  "env": {
+    "ANTHROPIC_API_KEY": "sk-ant-api-...",
+
+    "// BEDROCK": "Uncomment to route through Amazon Bedrock instead of the Anthropic API.",
+    "// CLAUDE_CODE_USE_BEDROCK": "1",
+    "// AWS_REGION": "us-west-2",
+
+    "// VERTEX": "Uncomment to route through Google Vertex AI.",
+    "// CLAUDE_CODE_USE_VERTEX": "1",
+    "// CLOUD_ML_REGION": "us-central1",
+    "// ANTHROPIC_VERTEX_PROJECT_ID": "my-gcp-project",
+
+    "// FOUNDRY": "Uncomment to route through Microsoft Foundry.",
+    "// CLAUDE_CODE_USE_FOUNDRY": "1",
+
+    "// LLM_GATEWAY": "Point at an internal LLM gateway.",
+    "// ANTHROPIC_BASE_URL": "https://llm-gateway.internal",
+
+    "// TELEMETRY": "Disable usage telemetry.",
+    "// DISABLE_TELEMETRY": "1",
+
+    "// OTEL": "Send OpenTelemetry traces to your collector.",
+    "// OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
+    "// OTEL_SERVICE_NAME": "claude-code"
+  },
+
+  "// HOOKS": "Personal hooks that shouldn't be shared with the team.",
   "hooks": {
     "SessionStart": [
       {
@@ -22,11 +55,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Local session started'",
-            "description": "Personal session startup hook"
+            "command": "echo '[local] session started for $USER'"
           }
         ]
       }
     ]
-  }
+  },
+
+  "// ENABLE_SPECIFIC_MCPS": "Opt in to per-project MCP servers declared in .mcp.json.",
+  "enabledMcpjsonServers": ["filesystem", "git"]
 }

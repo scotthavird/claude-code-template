@@ -1,159 +1,174 @@
 # Claude Code Template
 
-A barebones, customizable starter template for Claude Code projects with devcontainer support, custom commands, and comprehensive hook logging for data science analysis.
+An opinionated, comprehensive [Claude Code](https://code.claude.com/) starter
+template — installable as a plugin, forkable as a base repo, runnable in a
+devcontainer.
 
-## Quick Start
+Covers: slash commands, subagents, auto-triggered skills, output styles,
+status line, hooks, MCP servers, CI/CD (GitHub Actions + GitLab), Agent SDK
+examples, devcontainer with egress firewall, and more.
 
-### Option 1: Using VS Code
-1. **Use this template** to create a new repository
-2. **Install** the [Remote-Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-3. **Open the repository** in VS Code
-4. **Select "Reopen in Container"** when prompted (or use `Cmd+Shift+P` → "Remote-Containers: Reopen in Container")
-5. **Wait for setup** to complete (installs dependencies and configures environment)
-6. **Open a terminal** in VS Code (`Ctrl+`` or `View → Terminal`)
-7. **Start Claude Code** by running: `claude`
-8. **Try the example command**: `/analyze-project`
+## Install as a plugin
 
-### Option 2: Using Cursor
-1. **Use this template** to create a new repository
-2. **Open the repository** in Cursor
-3. **Look for the devcontainer notification** or use `Cmd+Shift+P` → "Dev Containers: Reopen in Container"
-4. **Wait for the container to build** and setup to complete
-5. **Open a terminal** in Cursor (`Ctrl+`` or `View → Terminal`)
-6. **Start Claude Code** by running: `claude`
-7. **Try the example command**: `/analyze-project`
-
-## Features
-
-### DevContainer Ready
-- Pre-configured development environment with Node.js 20
-- Automatic setup of tools and dependencies
-- Consistent environment across team members
-- Security-focused with network restrictions
-
-### Custom Slash Commands
-- **`/analyze-project`** - Analyze project structure and provide insights
-- Demonstrates YAML frontmatter, bash execution, and argument handling
-- Easy to extend with your own commands
-
-### Hook Logging & Analytics
-- **Comprehensive logging** of all Claude Code events (PreToolUse, PostToolUse, UserPromptSubmit)
-- **JSON format** for easy data science analysis
-- **Built-in analysis tools** to understand usage patterns
-- **Temporal analysis** and tool usage statistics
-
-### Data Science Analysis
-Run the analysis script to gain insights:
-```bash
-# Analyze all logged events
-python3 scripts/analyze-logs.py
-
-# Filter by specific tool
-python3 scripts/analyze-logs.py --tool "edit_file"
-
-# Filter by event type  
-python3 scripts/analyze-logs.py --event "PostToolUse"
-```
-
-## Starting Claude Code
-
-After your devcontainer is built and running:
-
-1. **Open a terminal** in your IDE (`Ctrl+`` or `View → Terminal`)
-2. **Run the command**: `claude`
-3. **Wait for Claude Code to initialize** (first run may take a moment)
-4. **Start chatting** or use slash commands like `/analyze-project`
-
-### Common Claude Code Commands
-- `claude` - Start interactive session
-- `claude --help` - Show available options
-- `claude --version` - Check version
-- `/help` - Show available slash commands (once in interactive mode)
-
-## Project Structure
+If you already use Claude Code:
 
 ```
-.claude/
-├── commands/           # Custom slash commands
-│   └── analyze-project.md
-└── settings.json      # Hook configurations
-
-.devcontainer/
-├── devcontainer.json  # Container setup
-└── post-create.sh     # Environment setup script
-
-scripts/
-├── log-hook-event.sh  # Hook logging script
-└── analyze-logs.py    # Log analysis tool
-
-logs/                  # Generated logs (gitignored)
-├── all-hooks.jsonl    # All events
-└── hooks-YYYY-MM-DD.jsonl  # Daily logs
+/plugin install scotthavird/claude-code-template
 ```
+
+This gives you all commands, agents, skills, output styles, and hooks from
+this template, without forking the repo.
+
+## Fork as a base
+
+1. **Use this template** to create a new repo.
+2. **Open in a container** — VS Code / Cursor will prompt to "Reopen in Container", or use `Cmd+Shift+P` → *Dev Containers: Reopen in Container*. Claude Code, Prettier, ESLint, Ruff, and GH extensions are pre-installed.
+3. **Authenticate** — copy `.claude/settings.local.json.example` → `.claude/settings.local.json` and add your `ANTHROPIC_API_KEY`, or run `claude /login`.
+4. **Start a session** — `claude` in the repo root.
+5. **Try a command** — `/analyze-project`, `/review`, or `/debug`.
+
+## What's inside
+
+### Slash commands (12)
+
+`/analyze-project` `/commit` `/pr` `/test` `/lint-fix` `/review`
+`/security-review` `/debug` `/refactor` `/explain` `/doc` `/implement-issue`
+
+### Subagents (7)
+
+`security-auditor` `doc-generator` `test-runner` `pr-reviewer`
+`refactor-planner` `debugger` `dependency-auditor`
+
+### Skills (6, auto-triggered)
+
+`code-review` `db-migration` `test-writing` `api-design`
+`performance-audit` `accessibility`
+
+### Output styles (3)
+
+`concise` `educational` `review`
+
+### Hooks (real, not just logging)
+
+- **Format on save** — Prettier / Ruff / gofmt / rustfmt
+- **Block dangerous bash** — `rm -rf /`, force-push to main, pipe-to-shell
+- **Inject context on session start** — branch, commits, open PRs
+- **Session cost summary on stop**
+
+### CI/CD
+
+- `.github/workflows/claude.yml` — `@claude` mentions in issues/PRs
+- `.github/workflows/claude-review.yml` — automatic review on new PRs
+- `.gitlab-ci.yml` — GitLab equivalent
+- `scripts/ci-review.sh` — headless-mode example
+
+### Agent SDK
+
+`sdk/` has TypeScript and Python starters including a custom-tool example.
+
+### DevContainer
+
+- Node 20 + Python 3.12 + Docker-in-Docker
+- Egress firewall (`init-firewall.sh`) restricting outbound network to an
+  allowlist (Anthropic API, GitHub, npm, PyPI)
+- `~/.claude` mounted so global settings and auto-memory persist
+
+## Directory layout
+
+```
+.claude-plugin/      plugin.json + marketplace.json
+.claude/             commands, agents, skills, output-styles, statusline, settings
+.devcontainer/       container + firewall
+.github/workflows/   Claude Code CI
+.mcp.json            filesystem, memory, git, fetch
+docs/                best-practices, permission-modes, hooks-cookbook, plugins, agent-sdk, integrations
+scripts/             hook scripts + log analyzer + CI review
+sdk/                 TypeScript + Python SDK starters
+CLAUDE.md            persistent system prompt
+```
+
+## Documentation
+
+- [Best practices](docs/best-practices.md)
+- [Permission modes](docs/permission-modes.md)
+- [Hooks cookbook](docs/hooks-cookbook.md)
+- [Plugins](docs/plugins.md)
+- [Agent SDK](docs/agent-sdk.md)
+- [Integrations](docs/integrations.md)
+- [The `.claude/` directory](docs/claude-directory.md)
 
 ## Customization
 
-### Adding Custom Commands
-1. Create a new `.md` file in `.claude/commands/`
-2. Use YAML frontmatter for configuration:
+### Add a slash command
+
+Create `.claude/commands/my-command.md`:
+
 ```markdown
 ---
-description: Your command description
-argument-hint: [optional-args]
-allowed-tools: Bash(command:*), FileRead, etc.
+description: What this command does
+argument-hint: [arg1]
+allowed-tools: Bash(git:*), Read
 ---
 
-Your command content here with $ARGUMENTS support
+Your prompt here. $ARGUMENTS becomes the user's input.
 ```
 
-### Modifying Hook Behavior
-Edit `.claude/settings.json` to:
-- Change which events are logged
-- Add custom hook scripts
-- Filter by specific tools or patterns
+### Add a subagent
 
-### Analyzing Your Data
-The included Python analysis script provides:
-- Tool usage statistics
-- Temporal patterns (hourly/daily usage)
-- Argument pattern analysis
-- Summary reports
+Create `.claude/agents/my-agent.md`:
 
-## IDE-Specific Notes
+```markdown
+---
+name: my-agent
+description: When this agent should be used.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
 
-### VS Code
-- Requires the [Remote-Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- Extensions are pre-configured in `devcontainer.json`
-- Terminal integrates seamlessly with the container
+System prompt for the agent...
+```
 
-### Cursor
-- Built-in devcontainer support (no additional extensions needed)
-- Claude Code integration works natively within the container
-- All logging and analysis tools work the same way
-- Use `Cmd+Shift+P` → "Dev Containers" to access container commands
+### Add a skill
 
-## Security Notes
+Create `.claude/skills/my-skill/SKILL.md`:
 
-- **Log files are gitignored** - they may contain sensitive data
-- **Use `.claude/settings.local.json`** for sensitive local configurations
-- **Review custom commands** before sharing with team
-- **DevContainer provides isolation** but always use trusted repositories
+```markdown
+---
+name: my-skill
+description: Triggers on X, Y, Z contexts.
+allowed-tools: Read, Grep
+---
 
-## Learn More
+Instructions for the skill...
+```
 
-- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
-- [Custom Slash Commands](https://docs.anthropic.com/en/docs/claude-code/slash-commands)
-- [Hooks Reference](https://docs.anthropic.com/en/docs/claude-code/hooks)
-- [DevContainer Guide](https://docs.anthropic.com/en/docs/claude-code/devcontainer)
+## Security notes
+
+- `logs/` is gitignored — hook logs may contain sensitive prompts/outputs.
+- `.claude/settings.local.json` is gitignored — put personal API keys there.
+- Permission rules deny `Read(.env)`, `Read(./secrets/**)`, `Bash(rm -rf:*)`, `Bash(sudo:*)`, and pipe-to-shell patterns by default.
+- The PreToolUse hook `block-dangerous-bash.sh` provides a second layer.
+- The devcontainer firewall restricts egress to a fixed allowlist.
+
+## Learn more
+
+- [Claude Code overview](https://code.claude.com/docs/en/overview)
+- [Commands](https://code.claude.com/docs/en/commands)
+- [Hooks](https://code.claude.com/docs/en/hooks)
+- [Skills](https://code.claude.com/docs/en/skills)
+- [Subagents](https://code.claude.com/docs/en/sub-agents)
+- [Plugins](https://code.claude.com/docs/en/plugins)
+- [Settings](https://code.claude.com/docs/en/settings)
+- [MCP](https://code.claude.com/docs/en/mcp)
+- [Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview)
+- [GitHub Actions](https://code.claude.com/docs/en/github-actions)
+- [DevContainers](https://code.claude.com/docs/en/devcontainer)
 
 ## Contributing
 
-This template is designed to be forked and customized. Feel free to:
-- Add more example commands
-- Enhance the logging and analysis tools
-- Improve the devcontainer configuration
-- Share your customizations with the community
+Fork, customize, share. If you add a broadly useful command / skill /
+agent, PRs are welcome.
 
----
+## License
 
-**Happy coding with Claude!**
+MIT — see [LICENSE](LICENSE).
