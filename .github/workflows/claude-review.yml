@@ -4,8 +4,31 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+# Two-job pattern: a tiny gate job exposes whether ANTHROPIC_API_KEY is set
+# (since `if: ${{ secrets.X != '' }}` is not allowed at job level), and the
+# review job is gated on that. When the secret is missing, the review job
+# is skipped — not failed — so a fresh fork of this template doesn't get
+# red CI before the maintainer adds the key.
 jobs:
+  check-secret:
+    runs-on: ubuntu-latest
+    outputs:
+      has_key: ${{ steps.check.outputs.has_key }}
+    steps:
+      - id: check
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::ANTHROPIC_API_KEY is not set in repo Actions secrets — skipping Claude review. Add the secret in Settings → Secrets and variables → Actions to enable."
+          fi
+
   review:
+    needs: check-secret
+    if: needs.check-secret.outputs.has_key == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
