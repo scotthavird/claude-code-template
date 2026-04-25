@@ -10,7 +10,12 @@ issues, and review comments.
 `.github/workflows/claude-review.yml` — runs a review pass on every new
 PR or push to an open PR.
 
-Both require `ANTHROPIC_API_KEY` in the repo's Actions secrets. See the
+Both require `ANTHROPIC_API_KEY` in the repo's Actions secrets. **If the
+secret is not set, both workflows skip cleanly** (a `check-secret` gate
+job emits a workflow notice and the responder/review job is marked
+*skipped*, not failed) — so a fresh fork doesn't get red CI on every PR
+before you've configured the key. Add the secret at *Settings → Secrets
+and variables → Actions* to enable. See the
 [Claude Code GitHub Actions doc](https://code.claude.com/docs/en/github-actions).
 
 ## GitLab CI/CD
