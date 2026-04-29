@@ -39,10 +39,10 @@ this template, without forking the repo.
 `security-auditor` `doc-generator` `test-runner` `pr-reviewer`
 `refactor-planner` `debugger` `dependency-auditor`
 
-### Skills (6, auto-triggered)
+### Skills (7, auto-triggered)
 
 `code-review` `db-migration` `test-writing` `api-design`
-`performance-audit` `accessibility`
+`performance-audit` `accessibility` `effort-aware`
 
 ### Output styles (3)
 
@@ -51,9 +51,11 @@ this template, without forking the repo.
 ### Hooks (real, not just logging)
 
 - **Format on save** — Prettier / Ruff / gofmt / rustfmt
-- **Block dangerous bash** — `rm -rf /`, force-push to main, pipe-to-shell
+- **Block dangerous bash** — destructive patterns, force-push to main, pipe-to-shell (with quote/comment-aware matching)
 - **Inject context on session start** — branch, commits, open PRs
-- **Session cost summary on stop**
+- **Redact secrets from tool output** — uses v2.1.122 `updatedToolOutput` to scrub keys/JWTs/PATs before the model sees them
+- **PreCompact checkpoint** — saves session state before compaction drops context (v2.1.105+)
+- **Session cost on stop** — total cost plus per-tool `duration_ms` breakdown (v2.1.121+)
 
 ### CI/CD
 

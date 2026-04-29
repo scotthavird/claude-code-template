@@ -38,6 +38,31 @@ No prompts for anything. Claude can run any tool call without approval.
 **Only use in sandboxed / ephemeral environments** — a fresh devcontainer,
 a Docker container with no mounted credentials, a VM you can burn.
 
+## `auto` (Claude Code v2.1.111+)
+
+A classifier handles permission prompts: safe actions run without
+interruption, risky ones get blocked, and ambiguous ones still prompt.
+The middle ground between `default` (prompts on everything unlisted)
+and `bypassPermissions` (no prompts at all).
+
+Configure custom rules via `autoMode` in settings. Use `"$defaults"` to
+extend the built-in lists rather than replace them:
+
+```json
+{
+  "permissions": { "defaultMode": "auto" },
+  "autoMode": {
+    "allow": ["$defaults", "Bash(my-internal-tool:*)"],
+    "soft_deny": ["$defaults"],
+    "environment": ["$defaults"]
+  }
+}
+```
+
+When auto mode denies a call, the new `PermissionDenied` hook (v2.1.89+)
+fires and the call appears in `/permissions` Recent tab with a retry
+option.
+
 ## Switching modes mid-session
 
 ```

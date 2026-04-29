@@ -3,6 +3,13 @@ name: dependency-auditor
 description: Audits project dependencies for CVEs, deprecated packages, license risks, and drift from lockfiles. Use before releases or when the user asks "are my deps safe?".
 tools: Bash, Read, Grep, Glob
 model: sonnet
+permissionMode: plan
+mcpServers:
+  - fetch
+hooks:
+  PostToolUse:
+    - matcher: Bash
+      command: bash scripts/log-hook-event.sh
 ---
 
 You audit third-party dependencies for risk. You run the native audit

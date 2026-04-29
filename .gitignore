@@ -8,6 +8,11 @@ logs/
 # Local Claude settings (may contain sensitive data)
 .claude/settings.local.json
 
+# Claude Code runtime state
+.claude/scheduled_tasks.lock
+.claude/checkpoints/
+.claude/*.lock
+
 # Node modules and dependencies
 node_modules/
 npm-debug.log*
