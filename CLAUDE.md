@@ -70,6 +70,7 @@ scripts/
 | `api-design` | HTTP/REST/GraphQL/RPC interface work |
 | `performance-audit` | Profiling, optimization, hot paths |
 | `accessibility` | UI work (WCAG 2.2 AA baseline) |
+| `effort-aware` | Adapts to `${CLAUDE_EFFORT}` (v2.1.120+) — calibrate scope |
 
 ## Hooks
 
@@ -79,9 +80,11 @@ payload as JSON on stdin.
 | Event | Script | Effect |
 |---|---|---|
 | `SessionStart` | `inject-context.sh` | Injects branch + recent commits + open PRs |
-| `PreToolUse` (Bash) | `block-dangerous-bash.sh` | Blocks `rm -rf /`, force-push to main, pipe-to-shell, etc. |
-| `PostToolUse` (Edit\|Write) | `format-on-save.sh` | Runs Prettier / Ruff / gofmt / rustfmt on the edited file |
-| `Stop` | `session-cost.sh` | Prints session cost summary to stderr |
+| `PreToolUse` (Bash) | `block-dangerous-bash.sh` | Blocks destructive shell patterns |
+| `PostToolUse` (Edit\|Write) | `format-on-save.sh` | Runs Prettier / Ruff / gofmt / rustfmt |
+| `PostToolUse` (Bash\|Read\|Grep) | `redact-secrets.sh` | Rewrites tool output via `updatedToolOutput` (v2.1.122) to redact secrets |
+| `PreCompact` | `pre-compact.sh` | Saves a checkpoint to `.claude/checkpoints/` before compaction (v2.1.105) |
+| `Stop` | `session-cost.sh` | Cost summary + per-tool `duration_ms` breakdown (v2.1.121) |
 | All events | `log-hook-event.sh` | JSONL logging for later analysis |
 
 See [docs/hooks-cookbook.md](docs/hooks-cookbook.md) for details.
@@ -90,6 +93,8 @@ See [docs/hooks-cookbook.md](docs/hooks-cookbook.md) for details.
 
 Default is `default` (prompts on every unlisted Bash / file write).
 Switch per session with `/mode <name>` or `--permission-mode <name>`.
+Modes: `default`, `acceptEdits`, `plan`, `bypassPermissions`, `auto`
+(v2.1.111+ — classifier-based).
 
 See [docs/permission-modes.md](docs/permission-modes.md).
 
@@ -98,12 +103,15 @@ See [docs/permission-modes.md](docs/permission-modes.md).
 Declared in `.mcp.json`. Opted in via `enabledMcpjsonServers` in
 `settings.json`:
 
-| Server | What it does |
-|---|---|
-| `filesystem` | Sandboxed file access rooted at project dir |
-| `memory` | Persistent knowledge graph across sessions |
-| `git` | Git log/diff/blame/show operations |
-| `fetch` | Fetch web content as markdown |
+| Server | `alwaysLoad` | What it does |
+|---|---|---|
+| `filesystem` | yes | Sandboxed file access rooted at project dir |
+| `git` | yes | Git log/diff/blame/show operations |
+| `memory` | no | Persistent knowledge graph across sessions |
+| `fetch` | no | Fetch web content as markdown |
+
+`alwaysLoad: true` (v2.1.122) skips tool-search deferral so these tools
+are always available without `@`-mention discovery.
 
 ## Memory
 
@@ -114,6 +122,18 @@ Two independent systems:
 2. **Auto memory** at `~/.claude/projects/.../memory/` — Claude builds
    this as it learns about the project. Not committed. Inspect/edit it
    directly if needed.
+
+## Themes
+
+`.claude/themes/anthropic-clay.json` — a warm, low-contrast theme that
+auto-adapts to light/dark terminals. Switch with `/theme` (v2.1.118+).
+
+## Plugin executables (`bin/`)
+
+`bin/claude-template-info` — example of a plugin-shipped executable
+that goes on the Bash tool's `$PATH` when this plugin is installed
+(v2.1.91+). Run it from any session to get a one-page summary of what
+this template provides.
 
 ## DevContainer
 

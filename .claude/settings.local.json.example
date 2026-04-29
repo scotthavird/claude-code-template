@@ -2,9 +2,12 @@
   "// INSTRUCTIONS": "Copy this file to .claude/settings.local.json and customize. It is gitignored.",
 
   "// MODEL": "Override the default model per session. Omit to inherit global/default.",
-  "model": "claude-sonnet-4-6",
+  "model": "claude-opus-4-7",
 
-  "// PERMISSION_MODE": "default | acceptEdits | plan | bypassPermissions",
+  "// EFFORT": "Default effort level. Recommended: xhigh on Opus 4.7 for coding work.",
+  "// effort": "xhigh",
+
+  "// PERMISSION_MODE": "default | acceptEdits | plan | bypassPermissions | auto",
   "permissions": {
     "defaultMode": "default",
     "allow": [
@@ -14,19 +17,42 @@
     ]
   },
 
+  "// AUTO_MODE": "Optional opt-in to auto mode (v2.1.111+). A classifier handles permission prompts so safe actions run without interruption and risky ones are blocked. Use $defaults to extend the built-in lists rather than replace them.",
+  "// autoMode": {
+    "// allow": ["$defaults", "Bash(my-internal-tool:*)"],
+    "// soft_deny": ["$defaults"],
+    "// environment": ["$defaults"]
+  },
+
   "// ADDITIONAL_DIRS": "Let Claude also read code outside the repo (monorepos, shared libs).",
   "additionalDirectories": [
     "~/src/shared-libs",
     "~/src/design-system"
   ],
 
-  "// ENV": "API keys and provider selection. See https://code.claude.com/docs/en/env-vars",
+  "// ENV": "API keys, provider selection, and feature toggles. See https://code.claude.com/docs/en/env-vars",
   "env": {
     "ANTHROPIC_API_KEY": "sk-ant-api-...",
+
+    "// CACHING": "1-hour prompt cache TTL (v2.1.108+). Default is 5 minutes.",
+    "// ENABLE_PROMPT_CACHING_1H": "1",
+
+    "// RENDERING": "Flicker-free fullscreen rendering (v2.1.89+).",
+    "// CLAUDE_CODE_NO_FLICKER": "1",
+
+    "// PRIVACY": "Hide working directory in startup logo (v2.1.119+).",
+    "// CLAUDE_CODE_HIDE_CWD": "1",
+
+    "// SUBAGENTS": "Enable forked subagents on external builds (v2.1.117+).",
+    "// CLAUDE_CODE_FORK_SUBAGENT": "1",
+
+    "// UPDATES": "Block all update paths including manual `claude update` (v2.1.118+).",
+    "// DISABLE_UPDATES": "1",
 
     "// BEDROCK": "Uncomment to route through Amazon Bedrock instead of the Anthropic API.",
     "// CLAUDE_CODE_USE_BEDROCK": "1",
     "// AWS_REGION": "us-west-2",
+    "// ANTHROPIC_BEDROCK_SERVICE_TIER": "priority",
 
     "// VERTEX": "Uncomment to route through Google Vertex AI.",
     "// CLAUDE_CODE_USE_VERTEX": "1",

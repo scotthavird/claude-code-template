@@ -10,6 +10,16 @@ issues, and review comments.
 `.github/workflows/claude-review.yml` — runs a review pass on every new
 PR or push to an open PR.
 
+### Lighter alternative: `/ultrareview`
+
+For an alternative to running the full Claude Code action in CI, the
+CLI now ships `claude ultrareview <target>` (v2.1.120+) which delegates
+review to cloud-managed parallel agents. Findings stream back to the
+runner. Cheaper for the runner, slower wall-clock, broader coverage
+than a single `claude -p` invocation.
+
+`scripts/ci-review.sh --ultrareview <target>` wraps it.
+
 Both require `ANTHROPIC_API_KEY` in the repo's Actions secrets. **If the
 secret is not set, both workflows skip cleanly** (a `check-secret` gate
 job emits a workflow notice and the responder/review job is marked
@@ -38,6 +48,14 @@ inspect live pages. [Chrome integration doc](https://code.claude.com/docs/en/chr
 
 Push events from arbitrary sources into a running session via the
 [channels API](https://code.claude.com/docs/en/channels).
+
+## Routines (cloud-scheduled agents)
+
+Templated cloud agents that fire from a cron schedule, GitHub event, or
+API call. Available on Claude Code on the web (Week 16, April 2026).
+Useful for: morning PR reviews, overnight CI failure analysis, weekly
+dependency audits, syncing docs after PRs merge. See
+[Routines](https://code.claude.com/docs/en/routines).
 
 ## Remote Control
 

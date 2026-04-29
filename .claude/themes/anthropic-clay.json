@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-theme.json",
+  "name": "anthropic-clay",
+  "displayName": "Anthropic Clay",
+  "description": "A warm, low-contrast theme inspired by Anthropic's clay/slate palette. Pairs well with light or dark terminals — the accent colors stay legible against either.",
+  "type": "auto",
+  "colors": {
+    "accent": "#d97757",
+    "accentMuted": "#c6613f",
+    "background": null,
+    "foreground": null,
+    "secondary": "#73726c",
+    "muted": "#91908a",
+    "success": "#22c55e",
+    "warning": "#eab308",
+    "error": "#dc2626",
+    "info": "#3b82f6",
+    "diffAdded": "#22c55e",
+    "diffRemoved": "#dc2626",
+    "diffContext": "#73726c",
+    "promptBorder": "#d97757",
+    "selectionBackground": "#d97757",
+    "selectionForeground": "#ffffff"
+  }
+}

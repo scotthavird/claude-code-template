@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "claude-code-template",
-  "version": "0.2.0",
-  "description": "A comprehensive Claude Code starter template: devcontainer, commands, skills, subagents, plugin scaffolding, hooks, MCP, CI/CD, and SDK examples.",
+  "version": "0.3.0",
+  "description": "A comprehensive Claude Code starter template: devcontainer, commands, skills, subagents, plugin scaffolding, hooks, themes, MCP, CI/CD, and SDK examples.",
   "author": {
     "name": "Scott Havird",
     "url": "https://github.com/scotthavird"
@@ -17,7 +17,8 @@
     "starter",
     "hooks",
     "skills",
-    "subagents"
+    "subagents",
+    "themes"
   ],
   "components": {
     "commands": ".claude/commands",
@@ -26,6 +27,8 @@
     "hooks": ".claude/settings.json",
     "outputStyles": ".claude/output-styles",
     "statusLine": ".claude/statusline/statusline.sh",
-    "mcpServers": ".mcp.json"
+    "mcpServers": ".mcp.json",
+    "themes": ".claude/themes",
+    "bin": "bin"
   }
 }

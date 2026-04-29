@@ -43,10 +43,22 @@
     ]
   },
 
+  "sandbox": {
+    "network": {
+      "deniedDomains": [
+        "metadata.google.internal",
+        "169.254.169.254"
+      ]
+    }
+  },
+
   "statusLine": {
     "type": "command",
-    "command": ".claude/statusline/statusline.sh"
+    "command": ".claude/statusline/statusline.sh",
+    "refreshInterval": 5
   },
+
+  "prUrlTemplate": "https://github.com/{owner}/{repo}/pull/{number}",
 
   "hooks": {
     "SessionStart": [
@@ -80,6 +92,7 @@
       },
       {
         "matcher": "Bash",
+        "if": "Bash(*)",
         "hooks": [
           {
             "type": "command",
@@ -97,7 +110,7 @@
           {
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
-            "description": "Log PostToolUse events"
+            "description": "Log PostToolUse events (now includes duration_ms)"
           }
         ]
       },
@@ -108,6 +121,29 @@
             "type": "command",
             "command": "bash scripts/hooks/format-on-save.sh",
             "description": "Run formatter on edited files"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Read|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/redact-secrets.sh",
+            "description": "Redact secret-shaped strings from tool output before the model sees it"
+          }
+        ]
+      }
+    ],
+
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/pre-compact.sh",
+            "description": "Save a checkpoint before compaction drops context"
           }
         ]
       }
@@ -151,7 +187,7 @@
           {
             "type": "command",
             "command": "bash scripts/hooks/session-cost.sh",
-            "description": "Surface session cost summary"
+            "description": "Surface session cost summary plus per-tool timing"
           }
         ]
       }

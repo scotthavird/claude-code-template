@@ -1,0 +1,40 @@
+#!/bin/bash
+# Plugin executable shipped at bin/ — Claude Code (v2.1.91+) puts plugin
+# bin/ directories on the Bash tool's $PATH, so this is invokable as:
+#   claude-template-info
+# from any Claude Code session that has this plugin installed.
+#
+# Reports a one-page summary of what the template provides. Useful in
+# new repos where contributors want to see what's available without
+# reading every file.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+count() {
+  # Count files matching a glob in a dir, returning 0 if dir missing.
+  local dir="$1" pattern="$2"
+  [ -d "$dir" ] || { echo 0; return; }
+  find "$dir" -type f -name "$pattern" 2>/dev/null | wc -l | tr -d ' '
+}
+
+echo "claude-code-template @ $ROOT"
+echo
+echo "Components:"
+printf '  %-15s %s commands\n' "commands"      "$(count "$ROOT/.claude/commands" '*.md')"
+printf '  %-15s %s subagents\n' "agents"       "$(count "$ROOT/.claude/agents" '*.md')"
+printf '  %-15s %s skills\n'    "skills"       "$(find "$ROOT/.claude/skills" -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')"
+printf '  %-15s %s presets\n'   "output-styles" "$(count "$ROOT/.claude/output-styles" '*.md')"
+printf '  %-15s %s themes\n'    "themes"       "$(count "$ROOT/.claude/themes" '*.json')"
+printf '  %-15s %s scripts\n'   "hooks"        "$(count "$ROOT/scripts/hooks" '*.sh')"
+echo
+echo "Quick reference:"
+echo "  /analyze-project     project structure overview"
+echo "  /review              review current branch / PR"
+echo "  /security-review     OWASP scan of the diff"
+echo "  /debug               trace bug to root cause"
+echo "  /refactor            plan a refactor"
+echo "  /implement-issue     read issue and ship it"
+echo
+echo "Docs: $ROOT/docs/"
