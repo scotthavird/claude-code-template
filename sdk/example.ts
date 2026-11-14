@@ -17,7 +17,7 @@ async function main() {
       // pointing at the repo root.
       cwd: process.cwd(),
       permissionMode: "acceptEdits",
-      model: "claude-sonnet-4-6",
+      model: "sonnet",
       maxTurns: 20,
     },
   });

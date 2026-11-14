@@ -13,26 +13,36 @@ examples, devcontainer with egress firewall, and more.
 If you already use Claude Code:
 
 ```
-/plugin install scotthavird/claude-code-template
+/plugin install dev-starter-kit --marketplace scotthavird/claude-code-template
 ```
 
-This gives you all commands, agents, skills, output styles, and hooks from
-this template, without forking the repo.
+The plugin is named `dev-starter-kit` because Claude Code reserves plugin
+names that start with `claude-`. Its components are namespaced under that
+name, for example `/dev-starter-kit:commit`.
+
+The plugin gives you the commands, subagents, skills, output styles, the
+theme, the MCP servers and the `bin/` helper. It doesn't bring the hooks,
+the status line or the permission rules. Those live in
+`.claude/settings.json`, so you get them by forking or copying the repo.
 
 ## Fork as a base
 
 1. **Use this template** to create a new repo.
-2. **Open in a container** — VS Code / Cursor will prompt to "Reopen in Container", or use `Cmd+Shift+P` → *Dev Containers: Reopen in Container*. Claude Code, Prettier, ESLint, Ruff, and GH extensions are pre-installed.
+2. **Open in a container** — VS Code / Cursor will prompt to "Reopen in Container", or use `Cmd+Shift+P` → _Dev Containers: Reopen in Container_. Claude Code, Prettier, ESLint, Ruff, and GH extensions are pre-installed.
 3. **Authenticate** — copy `.claude/settings.local.json.example` → `.claude/settings.local.json` and add your `ANTHROPIC_API_KEY`, or run `claude /login`.
 4. **Start a session** — `claude` in the repo root.
-5. **Try a command** — `/analyze-project`, `/review`, or `/debug`.
+5. **Try a command** — `/analyze-project`, `/pr-review`, or `/debug`.
 
 ## What's inside
 
 ### Slash commands (12)
 
-`/analyze-project` `/commit` `/pr` `/test` `/lint-fix` `/review`
-`/security-review` `/debug` `/refactor` `/explain` `/doc` `/implement-issue`
+`/analyze-project` `/commit` `/pr` `/test` `/lint-fix` `/pr-review`
+`/security-audit` `/debug` `/refactor` `/explain` `/doc` `/implement-issue`
+
+`/pr-review` was called `/review` until v2.1.223, when Claude Code made the
+built-in `/review` an alias of `/code-review`. Use `/pr-review` for the
+template's `pr-reviewer` subagent and `/code-review` for the built-in review.
 
 ### Subagents (7)
 
@@ -61,6 +71,7 @@ this template, without forking the repo.
 
 - `.github/workflows/claude.yml` — `@claude` mentions in issues/PRs
 - `.github/workflows/claude-review.yml` — automatic review on new PRs
+- `.github/workflows/plugin-validate.yml` — `claude plugin validate` on every PR (no API key needed)
 - `.gitlab-ci.yml` — GitLab equivalent
 - `scripts/ci-review.sh` — headless-mode example
 

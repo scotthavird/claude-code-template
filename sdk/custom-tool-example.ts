@@ -27,7 +27,7 @@ async function main() {
   const session = query({
     prompt: "What's the weather in Berlin and Tokyo? Which is warmer?",
     options: {
-      model: "claude-sonnet-4-6",
+      model: "sonnet",
       tools: [weather],
       maxTurns: 6,
     },

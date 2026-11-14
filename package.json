@@ -1,7 +1,7 @@
 {
   "name": "claude-code-template",
-  "version": "1.0.0",
-  "description": "A barebones starter template for Claude Code projects with devcontainer support and comprehensive logging",
+  "version": "0.4.0",
+  "description": "An opinionated Claude Code starter template: slash commands, subagents, skills, hooks, MCP servers, CI/CD, Agent SDK starters, and a devcontainer. Mirrors .claude-plugin/plugin.json version.",
   "main": "index.js",
   "scripts": {
     "analyze": "python3 scripts/analyze-logs.py",

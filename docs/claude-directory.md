@@ -5,7 +5,7 @@ This is what's in this template and what each piece does.
 
 ```
 .claude/
-├── commands/          slash commands: /commit, /review, /debug, etc.
+├── commands/          slash commands: /commit, /pr-review, /debug, etc.
 ├── agents/            specialized subagents: debugger, pr-reviewer, ...
 ├── skills/            auto-triggered context: test-writing, accessibility, ...
 ├── output-styles/     talk-style presets: concise, educational, review

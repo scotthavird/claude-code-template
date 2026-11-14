@@ -25,7 +25,7 @@ Implement the issue above end-to-end:
 4. **Implement.** Make the change. Do not over-scope — the rule is:
    smallest diff that closes the issue.
 5. **Test.** Run the existing test suite. Add tests for new behavior.
-6. **Self-review.** Run `/review` (or the `pr-reviewer` subagent) on your
+6. **Self-review.** Run `/pr-review` (or the `pr-reviewer` subagent) on your
    own diff. Fix BLOCKER/MAJOR findings before opening a PR.
 7. **Commit and PR.** Commit with `Closes #<number>` in the footer.
    Open a draft PR via `gh pr create --draft`.

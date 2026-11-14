@@ -12,6 +12,8 @@ logs/
 .claude/scheduled_tasks.lock
 .claude/checkpoints/
 .claude/*.lock
+# Worktrees created by `claude --worktree` and isolated subagents
+.claude/worktrees/
 
 # Node modules and dependencies
 node_modules/

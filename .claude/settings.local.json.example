@@ -1,15 +1,15 @@
 {
   "// INSTRUCTIONS": "Copy this file to .claude/settings.local.json and customize. It is gitignored.",
 
-  "// MODEL": "Override the default model per session. Omit to inherit global/default.",
-  "model": "claude-opus-4-7",
+  "// MODEL": "Override the default model per session. Aliases (opus, sonnet, haiku, fable) track the latest release; pin a full ID such as claude-opus-5-5 only if you need to. Omit to inherit global/default.",
+  "model": "opus",
 
-  "// EFFORT": "Default effort level. Recommended: xhigh on Opus 4.7 for coding work.",
-  "// effort": "xhigh",
+  "// EFFORT": "Default effort level: low | medium | high | xhigh. Opus 5.5 keeps its own starting effort unless you set one for it; see https://code.claude.com/docs/en/model-config.",
+  "// effortLevel": "xhigh",
 
-  "// PERMISSION_MODE": "default | acceptEdits | plan | bypassPermissions | auto",
+  "// PERMISSION_MODE": "Unset = built-in default (auto in the terminal on v2.1.284+, Manual under -p). Uncomment to pin Manual for yourself in this repo. Values: default (Manual; 'manual' also works on v2.1.200+) | acceptEdits | plan | dontAsk. 'auto' and 'bypassPermissions' are ignored in project files, including this one; set them in ~/.claude/settings.json or pass --permission-mode. See docs/permission-modes.md.",
   "permissions": {
-    "defaultMode": "default",
+    "// defaultMode": "default",
     "allow": [
       "Bash(docker:*)",
       "Bash(kubectl:*)",
@@ -17,12 +17,7 @@
     ]
   },
 
-  "// AUTO_MODE": "Optional opt-in to auto mode (v2.1.111+). A classifier handles permission prompts so safe actions run without interruption and risky ones are blocked. Use $defaults to extend the built-in lists rather than replace them.",
-  "// autoMode": {
-    "// allow": ["$defaults", "Bash(my-internal-tool:*)"],
-    "// soft_deny": ["$defaults"],
-    "// environment": ["$defaults"]
-  },
+  "// AUTO_MODE": "Don't put an autoMode block here: the classifier ignores autoMode in .claude/settings.json and .claude/settings.local.json. Put it in ~/.claude/settings.json, or run /auto-mode-setup, which writes it there. See docs/permission-modes.md.",
 
   "// ADDITIONAL_DIRS": "Let Claude also read code outside the repo (monorepos, shared libs).",
   "additionalDirectories": [

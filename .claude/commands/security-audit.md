@@ -4,7 +4,13 @@ argument-hint: [path]
 allowed-tools: Bash(git:*), Bash(grep:*), Bash(rg:*), Task, Read, Glob
 ---
 
-# Security Review Command
+# Security Audit Command
+
+This command was called `/security-review` until Claude Code shipped a
+built-in `/security-review` with the same name. The project command
+was renamed so it doesn't shadow the built-in. Use the built-in for a
+quick pass over pending changes; use `/security-audit` for the
+`security-auditor` subagent's full OWASP / secrets / dependency report.
 
 Launch the `security-auditor` subagent. Default scope: the diff against
 `origin/main` (i.e., what this branch changes). If `$ARGUMENTS` provides

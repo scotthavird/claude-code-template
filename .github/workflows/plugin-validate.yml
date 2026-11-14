@@ -1,0 +1,88 @@
+name: Plugin Validate
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main]
+
+# Same two-job pattern as claude.yml / claude-review.yml: a tiny gate job
+# decides whether there is anything to check, and the validate job is
+# skipped (not failed) when there isn't. `claude plugin validate` needs no
+# API key, so the gate checks for the plugin manifest instead: a fork that
+# deletes .claude-plugin/ to use the template as a plain repo stays green.
+jobs:
+  check-manifest:
+    runs-on: ubuntu-latest
+    outputs:
+      has_manifest: ${{ steps.check.outputs.has_manifest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .claude-plugin
+
+      - id: check
+        run: |
+          if [ -f .claude-plugin/plugin.json ]; then
+            echo "has_manifest=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_manifest=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No .claude-plugin/plugin.json in this repo — skipping plugin validation."
+          fi
+
+  validate:
+    needs: check-manifest
+    if: needs.check-manifest.outputs.has_manifest == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate plugin and marketplace manifests
+        # Equivalent to `claude plugin validate --strict .`, except one
+        # accepted warning: CLAUDE.md at the repo root is this template's
+        # own project memory, and the validator always warns that a root
+        # CLAUDE.md isn't loaded as plugin context. Every error, and every
+        # other warning, fails the job.
+        run: |
+          set -euo pipefail
+          claude --version
+          # --json keeps the same exit codes; don't let a non-zero exit stop
+          # us before the report is parsed and printed.
+          claude plugin validate --json . > validate.json || true
+
+          jq -r '
+            [.manifest] + (.contents // [])
+            | .[]
+            | (.file // "" | sub(".*/"; "")) as $f
+            | (.errors[]?   | "::error::\($f) \(.path): \(.message)"),
+              (.warnings[]? | "::warning::\($f) \(.path): \(.message)")
+          ' validate.json || true
+
+          problems=$(jq '
+            [.manifest] + (.contents // [])
+            | [ .[]
+                | (.errors // []) + ((.warnings // [])
+                    | map(select((.path == "root"
+                                  and (.message | startswith("CLAUDE.md at the plugin root"))) | not)))
+                | .[] ]
+            | length
+          ' validate.json)
+
+          if [ "$problems" -ne 0 ]; then
+            echo "::error::claude plugin validate reported $problems problem(s); see the annotations above."
+            jq . validate.json
+            exit 1
+          fi
+          echo "Plugin validation passed (strict, minus the accepted root CLAUDE.md warning)."

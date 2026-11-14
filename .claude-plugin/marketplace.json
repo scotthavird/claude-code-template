@@ -8,9 +8,9 @@
   },
   "plugins": [
     {
-      "name": "claude-code-template",
+      "name": "dev-starter-kit",
       "source": "./",
-      "description": "Comprehensive Claude Code starter template."
+      "description": "Opinionated Claude Code starter kit: commands, subagents, skills, output styles, theme, MCP servers."
     }
   ]
 }
