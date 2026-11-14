@@ -59,3 +59,10 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local 
+# Feature Showcase Pipeline (renders go to GitHub Releases, not git)
+showcase/out/
+showcase/features/*/takes/
+showcase/studio/.remotion/
+showcase/studio/public/
+# fixture .env files are fake demo data and must be committed
+!showcase/features/*/fixture/.env

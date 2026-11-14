@@ -1,0 +1,12 @@
+{
+  "take": 1,
+  "markers": {
+    "prompt": 2.745911,
+    "submitted": 4.957012,
+    "tool-call": 9.129465,
+    "redacted": 9.236279,
+    "done": 12.378835,
+    "end": 13.381482
+  },
+  "spendUsd": 0.03057025
+}

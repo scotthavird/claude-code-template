@@ -1,0 +1,155 @@
+# yaml-language-server: $schema=../../schema/feature.schema.json
+slug: redact-tool-output
+title: Redact secrets before Claude ever sees them
+name: Redact Secrets
+version: "2.1.122"
+changelog:
+  url: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+  quote: "PostToolUse hooks can now replace tool output via updatedToolOutput"
+category: hooks
+tagline: Your hook rewrites tool output. Secrets never reach the model.
+hook: ["Your agent just read your .env."]
+problem:
+  - "API keys land in the transcript."
+  - "Then in logs. Then in a PR comment."
+  - "One PostToolUse hook stops it."
+before:
+  - "⏺ Read(.env)"
+  - "  ANTHROPIC_API_KEY=sk-ant-api03-FAKE-demo…"
+  - "  OPENAI_API_KEY=sk-proj-FAKEdemoKEY…"
+
+recorder:
+  engine: pty
+  mode: interactive
+  model: haiku
+  permissionMode: acceptEdits
+  budgetUsd: 0.40
+  size: { cols: 92, rows: 26 }
+  repoName: shop-api
+  # Use the template's real, current hook script rather than a fixture copy.
+  copy:
+    - {
+        from: scripts/hooks/redact-secrets.sh,
+        to: scripts/hooks/redact-secrets.sh,
+      }
+  settings:
+    hooks:
+      PostToolUse:
+        - matcher: "Bash|Read|Grep"
+          hooks:
+            [{ type: command, command: "bash scripts/hooks/redact-secrets.sh" }]
+  takes: { max: 2, targetSeconds: 20 }
+
+scenario:
+  - wait: "shortcuts|for help|❯"
+    timeout: 45
+  - idle: 1.0
+  - marker: prompt
+  - type: "Read .env and list every key with its value"
+    cps: 26
+  - sleep: 0.5
+  - key: enter
+  - marker: submitted
+  - wait: "Read\\(|Read \\d+ (file|line)"
+  - marker: tool-call
+  - wait: "REDACTED"
+  - marker: redacted
+  - idle: 2.0
+    timeout: 90
+  - marker: done
+  - sleep: 1.0
+  - marker: end
+  - expect: "ANTHROPIC_API_KEY"
+  - expect: "NODE_ENV"
+  - expect: "FAKE-demo-key|FAKEdemoKEY"
+    absent: true
+
+scrub:
+  - { find: "/private/var/folders/\\S+", replace: "~/demo" }
+  - { find: "/Users/[A-Za-z0-9._-]+", replace: "~" }
+
+edit:
+  in: prompt
+  out: end
+  idleMax: 0.8
+  remap:
+    - { from: submitted, to: tool-call, speed: 4 }
+  hold:
+    - { at: submitted, seconds: 0.5 }
+    - { at: tool-call, seconds: 2.6 }
+    - { at: done, seconds: 6.6 }
+
+callouts:
+  - at: submitted
+    duration: 1.2
+    kind: keycap
+    keys: ["⏎"]
+    match: "Read \\.env and list every key with its value"
+    caption: "Ask Claude to read a real .env file"
+  - at: tool-call
+    duration: 2.8
+    kind: highlight
+    match: "Read\\(\\.env\\)|Read \\d+ (file|line)"
+    text: "PostToolUse hook fires here"
+    caption: "Claude reads the file. The hook rewrites the result before the model sees it."
+  - at: done
+    duration: 3.7
+    kind: zoom
+    zoom: 1.7
+    match: "ANTHROPIC_API_KEY.*\\n.*OPENAI_API_KEY.*REDACTED[^\\s]*"
+    text: "The model only ever saw [REDACTED]"
+    caption: "The key never reaches the model, the transcript or the reply."
+    social: true
+  - at: done
+    offset: 3.7
+    duration: 2.9
+    kind: callout
+    match: "NODE_ENV.*production"
+    text: "Normal config passes straight through"
+    caption: "Values that aren't secrets come back untouched."
+    social: true
+
+enable:
+  file: .claude/settings.json
+  lang: json
+  code: |
+    {
+      "hooks": {
+        "PostToolUse": [{
+          "matcher": "Bash|Read|Grep",
+          "hooks": [{
+            "type": "command",
+            "command": "bash scripts/hooks/redact-secrets.sh"
+          }]
+        }]
+      }
+    }
+  highlight: [4, 7]
+  install: claude plugin install dev-starter-kit@scotthavird-marketplace
+  caption: "One hook block in .claude/settings.json turns it on"
+
+cta:
+  line: "Ship agents that can't leak what they never see."
+  command: claude plugin install dev-starter-kit@scotthavird-marketplace
+  url: github.com/scotthavird/claude-code-template
+
+outputs: [hero-16x9, hero-webm, social-9x16, social-1x1, gif, poster, captions]
+
+docs:
+  summary: >
+    A `PostToolUse` hook receives every Bash, Read and Grep result before the
+    model does. `redact-secrets.sh` scans it for secret-shaped strings (Anthropic,
+    OpenAI-style, AWS, GitHub, Slack, JWT) and returns
+    `hookSpecificOutput.updatedToolOutput`. The model, the transcript and anything
+    it writes afterwards only ever see `[REDACTED-…]`.
+  tryIt:
+    - "Install the plugin, or copy `scripts/hooks/redact-secrets.sh` and the hook block above into your project."
+    - "Create a `.env` with a fake key, e.g. `OPENAI_API_KEY=sk-proj-FAKEdemoKEYnotREAL000000`."
+    - "Start `claude` and ask: `Read .env and list every key with its value`."
+    - "The secret comes back as `[REDACTED-openai-style-key]`; `NODE_ENV` and `PORT` come back unchanged."
+  related:
+    [
+      scripts/hooks/redact-secrets.sh,
+      docs/hooks-cookbook.md,
+      .claude/settings.json,
+    ]

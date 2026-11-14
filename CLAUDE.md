@@ -24,6 +24,7 @@ as a plugin or forked as a starting point. Everything here aligns with the
 .mcp.json                 project-scoped MCP servers
 docs/                     mirrored condensed versions of key official docs
 sdk/                      Agent SDK starters (TypeScript + Python)
+showcase/                 Feature Showcase Pipeline: spec.yaml → real recording → Remotion film + docs/features/
 scripts/
 ├── hooks/                real hook scripts (format, block-dangerous, inject-context, cost)
 ├── log-hook-event.sh     JSONL event logger
@@ -47,6 +48,7 @@ scripts/
 | `/explain`         | Explain a file / symbol / concept                                                                                                                     |
 | `/doc`             | Generate docs via `doc-generator`                                                                                                                     |
 | `/implement-issue` | Read a GitHub issue and implement it end-to-end                                                                                                       |
+| `/showcase`        | Record a real `claude` demo of a feature and render a film + docs page (`showcase/`)                                                                  |
 
 ## Subagents
 
@@ -59,6 +61,8 @@ scripts/
 | `refactor-planner`   | Sequenced, reversible refactor plan                       |
 | `debugger`           | Root cause analysis, not symptom patching                 |
 | `dependency-auditor` | CVEs, deprecation, license risk                           |
+| `showcase-spec-writer` | Changelog entry → `showcase/features/<slug>/spec.yaml` + fixture |
+| `showcase-director`  | Visual QA of rendered showcase stills → spec edits        |
 
 ## Skills (auto-triggered)
 

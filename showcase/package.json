@@ -1,0 +1,45 @@
+{
+  "name": "@claude-code-template/showcase",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Feature Showcase Pipeline: spec.yaml -> real claude recording -> Remotion motion-graphics film + docs page",
+  "scripts": {
+    "validate": "tsx recorder/src/cli.ts validate",
+    "schema": "tsx recorder/src/cli.ts schema",
+    "new": "tsx recorder/src/cli.ts scaffold",
+    "record": "tsx recorder/src/cli.ts record",
+    "compile": "tsx recorder/src/cli.ts compile",
+    "studio": "remotion studio studio/src/index.ts --port 3100",
+    "render": "tsx studio/render.ts",
+    "still": "tsx studio/render.ts --stills",
+    "docs": "tsx docs-gen/src/index.ts",
+    "build": "tsx recorder/src/cli.ts build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "doctor": "tsx recorder/src/cli.ts doctor",
+    "screen": "tsx recorder/src/cli.ts screen"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "18.3.12",
+    "@xterm/headless": "^6.0.0",
+    "node-pty": "^1.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.1",
+    "zod": "3.22.3",
+    "zod-to-json-schema": "^3.22.4"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.331",
+    "@remotion/cli": "4.0.331",
+    "@remotion/google-fonts": "4.0.331",
+    "@remotion/noise": "4.0.331",
+    "@remotion/renderer": "4.0.331",
+    "@remotion/transitions": "4.0.331",
+    "@remotion/zod-types": "4.0.331",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.331"
+  }
+}

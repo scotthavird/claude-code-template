@@ -1,0 +1,50 @@
+[
+  {
+    "at": "submitted",
+    "kind": "keycap",
+    "match": "Read \\.env and list every key with its value",
+    "anchor": {
+      "row": 4,
+      "col": 2,
+      "len": 43,
+      "h": 1,
+      "f": 2.811101
+    }
+  },
+  {
+    "at": "tool-call",
+    "kind": "highlight",
+    "match": "Read\\(\\.env\\)|Read \\d+ (file|line)",
+    "anchor": {
+      "row": 6,
+      "col": 2,
+      "len": 11,
+      "h": 1,
+      "f": 5.15421425
+    }
+  },
+  {
+    "at": "done",
+    "kind": "zoom",
+    "match": "ANTHROPIC_API_KEY.*\\n.*OPENAI_API_KEY.*REDACTED[^\\s]*",
+    "anchor": {
+      "row": 10,
+      "col": 2,
+      "len": 46,
+      "h": 2,
+      "f": 10.05286625
+    }
+  },
+  {
+    "at": "done",
+    "kind": "callout",
+    "match": "NODE_ENV.*production",
+    "anchor": {
+      "row": 8,
+      "col": 4,
+      "len": 21,
+      "h": 1,
+      "f": 13.352866249999998
+    }
+  }
+]

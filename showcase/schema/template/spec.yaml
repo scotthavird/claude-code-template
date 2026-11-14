@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=../../schema/feature.schema.json
+# Scaffolded by `pnpm --dir showcase new __SLUG__`. Fill in every TODO, then:
+#   pnpm --dir showcase validate --slug __SLUG__
+slug: __SLUG__
+title: "TODO: what the feature does, as a benefit"
+name: "TODO Short Name"
+version: "2.1.0" # TODO: Claude Code release that introduced it
+changelog:
+  url: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+  quote: "TODO: the changelog bullet"
+category: hooks # hooks|commands|skills|agents|mcp|settings|ui|sdk|ci
+tagline: "TODO: one line, at most 70 characters"
+hook: ["TODO: one line of pain."]
+problem:
+  - "TODO: beat one."
+  - "TODO: beat two."
+  - "TODO: the turn: what fixes it."
+before: [] # optional lines for the Problem scene's "before" terminal
+
+recorder:
+  engine: pty
+  mode: interactive
+  model: haiku
+  permissionMode: acceptEdits
+  budgetUsd: 0.40
+  size: { cols: 92, rows: 26 }
+  repoName: demo-app
+  copy: [] # [{ from: scripts/hooks/x.sh, to: scripts/hooks/x.sh }] use the template's real files
+  settings: {} # merged into the sandbox repo's .claude/settings.json
+  takes: { max: 2, targetSeconds: 20 }
+
+scenario:
+  - wait: "shortcuts|for help|❯"
+    timeout: 45
+  - idle: 1.0
+  - marker: prompt
+  - type: "TODO: a narrow, cheap prompt"
+    cps: 26
+  - sleep: 0.5
+  - key: enter
+  - marker: submitted
+  - idle: 2.0
+    timeout: 90
+  - marker: done
+  - sleep: 1.0
+  - marker: end
+  - expect: "TODO: text that proves the feature worked"
+
+edit:
+  in: prompt
+  out: end
+  idleMax: 0.8
+  remap: [{ from: submitted, to: done, speed: 3 }]
+  hold: [{ at: done, seconds: 4 }]
+
+callouts:
+  - at: done
+    duration: 3.5
+    kind: zoom
+    zoom: 1.7
+    match: "TODO: regex for on-screen text (pnpm screen --slug __SLUG__ --at done helps)"
+    text: "TODO: short card label"
+    caption: "TODO: one-sentence narration"
+    social: true
+
+enable:
+  file: .claude/settings.json
+  lang: json
+  code: |
+    {
+      "TODO": true
+    }
+  highlight: [2]
+  install: claude plugin install claude-code-template@scotthavird
+  caption: "TODO: how it is turned on"
+
+cta:
+  line: "TODO: the payoff line"
+  command: claude plugin install claude-code-template@scotthavird
+  url: github.com/scotthavird/claude-code-template
+
+docs:
+  summary: >
+    TODO: two or three sentences on what it does and why.
+  tryIt:
+    - "TODO: step one"
+  related: []
