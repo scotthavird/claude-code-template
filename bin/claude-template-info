@@ -6,20 +6,35 @@
 #
 # Reports a one-page summary of what the template provides. Useful in
 # new repos where contributors want to see what's available without
-# reading every file.
+# reading every file. Counts and lists are read from the files on disk,
+# so they stay correct as commands/agents/skills are added or renamed.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 count() {
-  # Count files matching a glob in a dir, returning 0 if dir missing.
+  # Count files matching a glob in a dir (excluding README.md), 0 if dir missing.
   local dir="$1" pattern="$2"
   [ -d "$dir" ] || { echo 0; return; }
-  find "$dir" -type f -name "$pattern" 2>/dev/null | wc -l | tr -d ' '
+  find "$dir" -maxdepth 1 -type f -name "$pattern" ! -name README.md 2>/dev/null | wc -l | tr -d ' '
 }
 
-echo "claude-code-template @ $ROOT"
+frontmatter() {
+  # Print the value of a frontmatter key from a markdown file.
+  local file="$1" key="$2"
+  awk -v k="$key" '
+    NR == 1 && $0 != "---" { exit }
+    NR > 1 && $0 == "---" { exit }
+    index($0, k ":") == 1 { sub("^" k ":[ ]*", ""); print; exit }
+  ' "$file"
+}
+
+manifest="$ROOT/.claude-plugin/plugin.json"
+plugin_name="$(sed -n 's/^  "name": "\(.*\)",$/\1/p' "$manifest" 2>/dev/null | head -1)"
+plugin_version="$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$manifest" 2>/dev/null | head -1)"
+
+echo "${plugin_name:-claude-code-template}${plugin_version:+ v$plugin_version} @ $ROOT"
 echo
 echo "Components:"
 printf '  %-15s %s commands\n' "commands"      "$(count "$ROOT/.claude/commands" '*.md')"
@@ -27,14 +42,23 @@ printf '  %-15s %s subagents\n' "agents"       "$(count "$ROOT/.claude/agents" '
 printf '  %-15s %s skills\n'    "skills"       "$(find "$ROOT/.claude/skills" -name SKILL.md 2>/dev/null | wc -l | tr -d ' ')"
 printf '  %-15s %s presets\n'   "output-styles" "$(count "$ROOT/.claude/output-styles" '*.md')"
 printf '  %-15s %s themes\n'    "themes"       "$(count "$ROOT/.claude/themes" '*.json')"
-printf '  %-15s %s scripts\n'   "hooks"        "$(count "$ROOT/scripts/hooks" '*.sh')"
+printf '  %-15s %s scripts\n'   "hooks"        "$(find "$ROOT/scripts/hooks" -maxdepth 1 -type f -name '*.sh' ! -name 'test-*' 2>/dev/null | wc -l | tr -d ' ')"
 echo
-echo "Quick reference:"
-echo "  /analyze-project     project structure overview"
-echo "  /review              review current branch / PR"
-echo "  /security-review     OWASP scan of the diff"
-echo "  /debug               trace bug to root cause"
-echo "  /refactor            plan a refactor"
-echo "  /implement-issue     read issue and ship it"
+echo "Slash commands:"
+for f in "$ROOT"/.claude/commands/*.md; do
+  [ -f "$f" ] || continue
+  printf '  /%-19s %s\n' "$(basename "$f" .md)" "$(frontmatter "$f" description)"
+done
+echo
+echo "Subagents:"
+for f in "$ROOT"/.claude/agents/*.md; do
+  [ -f "$f" ] || continue
+  desc="$(frontmatter "$f" description)"
+  # Agent descriptions can be long; keep the first sentence.
+  printf '  %-20s %s\n' "$(basename "$f" .md)" "${desc%%. *}"
+done
+echo
+echo "Built-ins worth knowing: /code-review (Claude Code's own diff review;"
+echo "  /review is its alias since v2.1.223), /permissions, /auto-mode-setup."
 echo
 echo "Docs: $ROOT/docs/"

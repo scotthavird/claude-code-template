@@ -1,8 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
-  "name": "claude-code-template",
-  "version": "0.3.0",
-  "description": "A comprehensive Claude Code starter template: devcontainer, commands, skills, subagents, plugin scaffolding, hooks, themes, MCP, CI/CD, and SDK examples.",
+  "name": "dev-starter-kit",
+  "displayName": "Claude Code Template",
+  "version": "0.4.0",
+  "description": "An opinionated Claude Code starter kit: slash commands, subagents, auto-triggered skills, output styles, a theme, MCP servers, and a plugin bin/ helper.",
   "author": {
     "name": "Scott Havird",
     "url": "https://github.com/scotthavird"
@@ -11,24 +12,34 @@
   "repository": "https://github.com/scotthavird/claude-code-template",
   "license": "MIT",
   "keywords": [
-    "claude-code",
     "template",
-    "devcontainer",
     "starter",
+    "devcontainer",
     "hooks",
     "skills",
     "subagents",
     "themes"
   ],
-  "components": {
-    "commands": ".claude/commands",
-    "agents": ".claude/agents",
-    "skills": ".claude/skills",
-    "hooks": ".claude/settings.json",
-    "outputStyles": ".claude/output-styles",
-    "statusLine": ".claude/statusline/statusline.sh",
-    "mcpServers": ".mcp.json",
-    "themes": ".claude/themes",
-    "bin": "bin"
+  "engines": {
+    "claude-code": ">=2.1.323"
+  },
+  "commands": "./.claude/commands",
+  "agents": [
+    "./.claude/agents/debugger.md",
+    "./.claude/agents/dependency-auditor.md",
+    "./.claude/agents/doc-generator.md",
+    "./.claude/agents/pr-reviewer.md",
+    "./.claude/agents/refactor-planner.md",
+    "./.claude/agents/security-auditor.md",
+    "./.claude/agents/test-runner.md"
+  ],
+  "skills": "./.claude/skills",
+  "outputStyles": [
+    "./.claude/output-styles/concise.md",
+    "./.claude/output-styles/educational.md",
+    "./.claude/output-styles/review.md"
+  ],
+  "experimental": {
+    "themes": "./.claude/themes/anthropic-clay.json"
   }
 }

@@ -20,6 +20,15 @@ if ! command -v claude >/dev/null 2>&1; then
   npm install -g @anthropic-ai/claude-code
 fi
 
+# uv provides `uvx`, which runs the Python MCP servers in .mcp.json
+# (mcp-server-git, mcp-server-fetch). Install before the firewall goes up;
+# PyPI stays on the allowlist either way. ~/.local/bin is added to PATH
+# via remoteEnv in devcontainer.json.
+if ! command -v uvx >/dev/null 2>&1; then
+  echo "[post-create] Installing uv (for uvx-based MCP servers)..."
+  python3 -m pip install --user --quiet uv || echo "[post-create] uv install failed (non-fatal): git/fetch MCP servers won't start"
+fi
+
 # Egress firewall (restricts outbound network to an allowlist).
 if [ -x .devcontainer/init-firewall.sh ]; then
   echo "[post-create] Initializing egress firewall..."
@@ -45,7 +54,7 @@ cat <<'EOF'
 [post-create] ✔ Setup complete.
 
 Available features:
-  • Slash commands         .claude/commands/     (/commit, /pr, /review, /debug, …)
+  • Slash commands         .claude/commands/     (/commit, /pr, /pr-review, /debug, …)
   • Subagents              .claude/agents/       (security-auditor, debugger, …)
   • Skills (auto-trigger)  .claude/skills/       (code-review, test-writing, …)
   • Output styles          .claude/output-styles/  (concise, educational, review)
@@ -57,7 +66,7 @@ Available features:
 Get started:
   1. Export your API key:  export ANTHROPIC_API_KEY=...
   2. Run 'claude' to start a session.
-  3. Try '/analyze-project' or '/review'.
+  3. Try '/analyze-project' or '/pr-review'.
 
 Docs:
   • README.md

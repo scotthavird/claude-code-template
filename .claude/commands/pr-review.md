@@ -4,9 +4,16 @@ argument-hint: [pr-number]
 allowed-tools: Bash(git:*), Bash(gh:*), Task
 ---
 
-# Review Command
+# PR Review Command
 
 Launch the `pr-reviewer` subagent to produce a structured review.
+
+This command was called `/review` until Claude Code v2.1.223 made the
+built-in `/review` an alias of `/code-review`. The project command
+shadowed the built-in, so it is now `/pr-review`. Use the built-in
+`/code-review [level] [pr#]` for Claude Code's own diff review, which
+also takes `--fix`, `--comment`, and `--max-findings`. Use this command
+for the template's severity-tagged `pr-reviewer` write-up.
 
 ## Current state
 

@@ -1,83 +1,175 @@
 # Permission Modes
 
-Claude Code has four permission modes that govern how tool calls are approved.
-Set the default in `.claude/settings.json` under `permissions.defaultMode`
-and override per-session with CLI flags or `/mode` inside the session.
+A permission mode decides which tool calls run without asking. Deny rules
+(`permissions.deny`) block in every mode, including `bypassPermissions`.
 
-See the [official permission modes doc](https://code.claude.com/docs/en/permission-modes).
+See the official [permission modes](https://code.claude.com/docs/en/permission-modes)
+and [configure auto mode](https://code.claude.com/docs/en/auto-mode-config) docs.
 
-## `default`
+## The modes
 
-Every tool call that isn't explicitly allow-listed prompts for approval.
-Safe choice for a new/unfamiliar repo.
+| Config value              | UI name            | What runs without asking                                                                                                              |
+| ------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `default` (also `manual`) | Manual             | Reads, plus anything matched by `permissions.allow`                                                                                   |
+| `acceptEdits`             | Accept edits       | Reads, file edits, and common filesystem commands (`mkdir`, `mv`, `cp`, …) in scope                                                   |
+| `plan`                    | Plan               | Reads only. Edits wait until you approve a plan. When auto mode is available, the classifier can approve commands it judges read-only |
+| `auto`                    | Auto               | Everything, with each action reviewed by the auto mode classifier                                                                     |
+| `dontAsk`                 | Don't ask          | Reads in the working directories and pre-approved tools. Anything that would prompt is denied                                         |
+| `bypassPermissions`       | Bypass permissions | Everything. Only for throwaway containers and VMs                                                                                     |
 
-- Every `Bash` command prompts unless matched by `permissions.allow`.
-- `Edit` / `Write` prompt for each file change.
-- Reads denied by `permissions.deny` are blocked outright.
+**Manual is the old "default".** v2.1.200 renamed the `default` mode to
+Manual in the CLI, `--help`, VS Code and JetBrains. `"defaultMode": "manual"`
+and `--permission-mode manual` work alongside `default`. Shared settings
+files should keep `default`, because CLIs older than v2.1.200 don't accept
+`manual`.
 
-## `acceptEdits`
+## Auto mode is the default now
 
-Skips prompts for `Edit`, `Write`, `MultiEdit`. Useful when you've decided
-you want Claude to just go ahead and make the changes and you'll review
-the diff afterward.
+If no permission mode is configured, the session starts in:
 
-- File edits happen silently.
-- Bash still prompts.
-- Permission denies still apply.
+- **auto** in interactive terminal and VS Code sessions. This applies to
+  every plan and provider from v2.1.284; v2.1.283 had already made it the
+  default on third-party providers and with telemetry off.
+- **Manual** (`default`) under `claude -p` and the Agent SDK (v2.1.302+).
+  A call that needs approval is denied unless a rule, hook, `canUseTool`
+  or `--permission-prompt-tool` allows it.
+- **Manual** whenever auto mode is unavailable, for example when an
+  administrator has disabled it. Since v2.1.323, a requested `auto` mode
+  that isn't available falls back to Manual, which asks first.
 
-## `plan`
+`permissions.defaultMode` still overrides the built-in default, with two
+exceptions in project files.
 
-Claude can read and think, but **cannot** make any changes or run any
-commands with side effects. Great for "explore this codebase and tell me
-how X works" or "plan this refactor". Exits via `ExitPlanMode` once a
-plan is approved.
+### Project files can't turn on auto or bypass
 
-## `bypassPermissions`
+In `.claude/settings.json` and `.claude/settings.local.json`,
+`"defaultMode": "auto"` and `"defaultMode": "bypassPermissions"` are
+ignored (bypass since v2.1.257). A repo you clone can't grant itself
+more autonomy. Put those values in `~/.claude/settings.json`, or pass
+`--permission-mode` on the command line. Every other value works in
+project files, and project values outrank `~/.claude/settings.json`.
 
-No prompts for anything. Claude can run any tool call without approval.
-**Only use in sandboxed / ephemeral environments** — a fresh devcontainer,
-a Docker container with no mounted credentials, a VM you can burn.
+VS Code never reads project settings for the starting mode. Use the
+`claudeCode.initialPermissionMode` VS Code setting instead.
 
-## `auto` (Claude Code v2.1.111+)
+**Plugins can't set it either.** A plugin install brings commands, agents
+and skills but no `permissions` block. Users who install this template as
+a plugin get whatever their own settings or the built-in default say,
+which is auto on a current CLI.
 
-A classifier handles permission prompts: safe actions run without
-interruption, risky ones get blocked, and ambiguous ones still prompt.
-The middle ground between `default` (prompts on everything unlisted)
-and `bypassPermissions` (no prompts at all).
+## Switching modes
 
-Configure custom rules via `autoMode` in settings. Use `"$defaults"` to
-extend the built-in lists rather than replace them:
+- **Shift+Tab** cycles modes. From `auto`, the first press goes to Manual,
+  then `acceptEdits`, then `plan`. `auto` sits at the end of the cycle
+  when it is available. `bypassPermissions` appears in the cycle only if
+  the session started with it enabled. `dontAsk` never appears.
+- **At launch:** `claude --permission-mode <mode>`. The choices are
+  `manual`, `acceptEdits`, `plan`, `auto`, `dontAsk` and
+  `bypassPermissions`.
+- **In settings:** `permissions.defaultMode`, subject to the
+  project-file rule above.
+
+## Configuring auto mode
+
+The classifier reads the `autoMode` block from `~/.claude/settings.json`,
+managed settings, and the `--settings` flag or Agent SDK. **It ignores
+`autoMode` in `.claude/settings.json` and `.claude/settings.local.json`**,
+so a checked-in repo can't add its own allow rules. That is why this
+template ships no `autoMode` block.
+
+Entries are prose rules, not tool patterns. Include `"$defaults"` to keep
+the built-in list for that section. An array without `"$defaults"`
+replaces the built-in rules entirely.
 
 ```json
 {
-  "permissions": { "defaultMode": "auto" },
   "autoMode": {
-    "allow": ["$defaults", "Bash(my-internal-tool:*)"],
-    "soft_deny": ["$defaults"],
-    "environment": ["$defaults"]
+    "environment": [
+      "$defaults",
+      "Source control: github.com/your-org and all repos under it"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Never run database migrations outside the migrations CLI"
+    ],
+    "hard_deny": [
+      "$defaults",
+      "Never send repository contents to third-party code-review APIs"
+    ]
   }
 }
 ```
 
-When auto mode denies a call, the new `PermissionDenied` hook (v2.1.89+)
-fires and the call appears in `/permissions` Recent tab with a retry
-option.
+| Key                | Meaning                                                                                                                | Since    |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------- |
+| `environment`      | Trusted repos, buckets, domains and services, plus context about your org                                              | —        |
+| `allow`            | Exceptions to `soft_deny` rules                                                                                        | —        |
+| `soft_deny`        | Risky actions that an explicit user request can clear                                                                  | —        |
+| `hard_deny`        | Actions blocked even when the user asks for them                                                                       | v2.1.136 |
+| `classifyAllShell` | `true` sends every Bash/PowerShell command to the classifier, suspending even narrow allow rules like `Bash(npm test)` | v2.1.193 |
 
-## Switching modes mid-session
+By default, auto mode suspends only broad allow rules that grant
+arbitrary code execution, such as `Bash(*)` or wildcarded interpreters.
+Narrow rules like the ones in this template's `permissions.allow` still
+approve matching commands before the classifier runs. Set
+`classifyAllShell` if you want the classifier to see every shell command.
 
-```
-/mode default
-/mode acceptEdits
-/mode plan
-```
+### Tools for auto mode
 
-Or via CLI flag:
+- **`/auto-mode-setup`** (v2.1.304 on every provider): reads the project
+  and your recent sessions in it, drafts `environment` entries, and writes
+  them to `~/.claude/settings.json` if you accept.
+- **`claude auto-mode defaults`** prints the built-in rules as JSON.
+  `--label '<prefix>'` shows one rule.
+- **`claude auto-mode config`** prints the effective rules after your
+  settings are applied.
+- **`claude auto-mode critique`** reviews your custom rules for
+  ambiguity and redundancy.
+- **`claude auto-mode reset`** (v2.1.212) removes the `autoMode` block
+  from your user settings. `--yes` skips the confirmation.
+- **`/permissions` → Auto mode tab** (v2.1.246) lets you view and edit
+  rules. Changes are saved to `~/.claude/settings.json`.
 
-```bash
-claude --permission-mode plan
+### When the classifier blocks something
+
+- A denial reason appears in the transcript, the toast and `/permissions`
+  (v2.1.193), for example `Auto mode: [Data Exfiltration]`. The bracketed
+  text is the name of the rule that matched.
+- **`/permissions` → Recently blocked** shows the exact command. Press `r`
+  to approve it and let Claude retry. Approving doesn't add a rule.
+- The `PermissionDenied` hook receives the blocked call's `tool_input`.
+- After 3 blocks in a row, or 20 in total, auto mode pauses and Claude
+  Code goes back to prompting.
+
+### Keep a human checkpoint in auto mode
+
+Explicit `ask` rules are evaluated before the classifier and always
+prompt, even in auto mode:
+
+```json
+{
+  "permissions": {
+    "ask": ["Bash(git push *)", "Bash(gh pr create *)"]
+  }
+}
 ```
 
 ## This template's default
 
-`default` — the safest starting point for a publicly-forked template.
-Change it in `.claude/settings.json` once you trust your workflow.
+`.claude/settings.json` sets **no** `permissions.defaultMode`. Here is why:
+
+- The option it would want, `auto`, is ignored in project files. Pinning
+  `default` would therefore force Manual on everyone who opens the repo,
+  and because project settings outrank user settings, it would override
+  a user who chose `auto` in `~/.claude/settings.json`.
+- Without a pin, a fork behaves the same way as a plugin install, which
+  can't carry `defaultMode` anyway. Both follow the user's own setting or
+  the built-in default, which is auto in the terminal and Manual in `-p`.
+- The guardrails still apply in every mode. These are the
+  `permissions.deny` rules, the `block-dangerous-bash.sh` PreToolUse hook
+  and `redact-secrets.sh`.
+
+To pin Manual for yourself in this repo, set `"defaultMode": "default"`
+in `.claude/settings.local.json`; the example file has it commented out.
+To pin it for the whole team, put the same value in
+`.claude/settings.json`.

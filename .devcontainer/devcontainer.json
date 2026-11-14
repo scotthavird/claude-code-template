@@ -36,12 +36,11 @@
     "source=claude-code-template-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
     "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached"
   ],
-  "runArgs": [
-    "--init",
-    "--cap-add=NET_ADMIN",
-    "--cap-add=NET_RAW"
-  ],
+  "runArgs": ["--init", "--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
   "containerEnv": {
     "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/node/.local/bin"
   }
 }

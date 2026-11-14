@@ -7,6 +7,6 @@ Switch with `/output-style <name>` or set a default in `.claude/settings.json`.
 |---|---|
 | `concise` | You already know the codebase and want fast answers. |
 | `educational` | Pairing, onboarding, or learning an unfamiliar stack. |
-| `review` | Running `/review` or going through a PR. |
+| `review` | Running `/pr-review` or going through a PR. |
 
 See the [official output styles docs](https://code.claude.com/docs/en/output-styles).

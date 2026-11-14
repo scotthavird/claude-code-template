@@ -9,10 +9,10 @@
     },
     "git": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-git", "--repository", "."],
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "."],
       "alwaysLoad": true,
-      "description": "Git operations (log, diff, blame, show) via MCP."
+      "description": "Git operations (log, diff, blame, show) via MCP. Python package run with uvx; there is no npm build of this server."
     },
     "memory": {
       "type": "stdio",
@@ -22,9 +22,9 @@
     },
     "fetch": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
-      "description": "Fetch and convert web content to markdown."
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "description": "Fetch and convert web content to markdown. Python package run with uvx; there is no npm build of this server."
     }
   }
 }

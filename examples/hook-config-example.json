@@ -1,5 +1,5 @@
 {
-  "description": "Example hook configurations for different use cases",
+  "description": "Example hook configurations. Each entry under `examples` is a settings fragment: copy its `hooks` (or `permissions`) block into .claude/settings.json or .claude/settings.local.json. Every script referenced here exists in scripts/. See docs/hooks-cookbook.md.",
   "examples": {
     "basic_logging": {
       "hooks": {
@@ -9,8 +9,7 @@
             "hooks": [
               {
                 "type": "command",
-                "command": "bash scripts/log-hook-event.sh",
-                "description": "Log all tool usage"
+                "command": "bash scripts/log-hook-event.sh"
               }
             ]
           }
@@ -19,14 +18,44 @@
     },
     "file_operations_only": {
       "hooks": {
-        "PreToolUse": [
+        "PostToolUse": [
           {
-            "matcher": "edit_file|read_file|delete_file",
+            "matcher": "Edit|Write|MultiEdit",
             "hooks": [
               {
                 "type": "command",
-                "command": "bash scripts/log-file-operations.sh",
-                "description": "Log only file operations"
+                "command": "bash scripts/hooks/format-on-save.sh"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "guard_shell_commands": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash scripts/hooks/block-dangerous-bash.sh"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "only_on_git_push": {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "if": "Bash(git push *)",
+                "command": "bash scripts/log-hook-event.sh"
               }
             ]
           }
@@ -34,31 +63,19 @@
       }
     },
     "approval_required": {
-      "hooks": {
-        "PreToolUse": [
-          {
-            "matcher": "run_terminal_cmd",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "bash scripts/require-approval.sh",
-                "description": "Require approval for terminal commands"
-              }
-            ]
-          }
-        ]
+      "permissions": {
+        "ask": ["Bash(git push *)", "Bash(gh pr create *)"]
       }
     },
-    "notification_system": {
+    "log_notifications": {
       "hooks": {
-        "PostToolUse": [
+        "Notification": [
           {
-            "matcher": "edit_file",
+            "matcher": "*",
             "hooks": [
               {
                 "type": "command",
-                "command": "bash scripts/notify-file-changes.sh",
-                "description": "Notify team of file changes"
+                "command": "bash scripts/log-hook-event.sh"
               }
             ]
           }
@@ -67,10 +84,10 @@
     }
   },
   "usage_notes": [
-    "Copy the desired configuration to .claude/settings.json",
-    "Modify matchers to target specific tools or patterns",
-    "Create corresponding scripts in the scripts/ directory",
-    "Test hooks thoroughly before deploying to production",
-    "Use .claude/settings.local.json for environment-specific configs"
+    "Matchers are tool names: Bash, Edit, Write, MultiEdit, Read, Grep, Glob, mcp__<server>__<tool>. Combine with | (e.g. Edit|Write).",
+    "`if` goes on the hook handler, not the matcher group, and takes one permission rule such as Bash(git push *).",
+    "To require approval for a command, use permissions.ask rather than a hook; ask rules prompt even in auto mode.",
+    "Use .claude/settings.local.json for personal or environment-specific hooks.",
+    "Test hooks before relying on them: scripts/hooks/test-block-dangerous-bash.sh shows one way."
   ]
-} 
+}

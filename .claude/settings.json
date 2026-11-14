@@ -2,7 +2,6 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
 
   "permissions": {
-    "defaultMode": "default",
     "allow": [
       "Bash(npm run:*)",
       "Bash(npm test:*)",
@@ -45,10 +44,7 @@
 
   "sandbox": {
     "network": {
-      "deniedDomains": [
-        "metadata.google.internal",
-        "169.254.169.254"
-      ]
+      "deniedDomains": ["metadata.google.internal", "169.254.169.254"]
     }
   },
 
@@ -92,7 +88,6 @@
       },
       {
         "matcher": "Bash",
-        "if": "Bash(*)",
         "hooks": [
           {
             "type": "command",

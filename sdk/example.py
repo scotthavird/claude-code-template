@@ -18,7 +18,7 @@ async def main() -> None:
     options = ClaudeAgentOptions(
         cwd=".",
         permission_mode="acceptEdits",
-        model="claude-sonnet-4-6",
+        model="sonnet",
         max_turns=20,
     )
 

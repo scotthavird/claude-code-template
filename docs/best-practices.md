@@ -24,22 +24,40 @@ with the pieces most worth internalizing for this template.
 ## Use subagents for protection
 
 Subagents run in separate context windows. Delegate to them when:
+
 - Research or exploration would pollute the main context
 - You want an independent review (use `pr-reviewer`)
 - The subtask needs a different persona (e.g. `debugger`)
 
 ## Permission modes, picked intentionally
 
-| Mode | When |
-|---|---|
-| `default` | Unknown repo, first session, risky changes |
-| `acceptEdits` | Trusted repo, trusted task, you'll review the diff |
-| `plan` | You want Claude to plan before acting |
-| `bypassPermissions` | Only in ephemeral sandboxes/containers |
+| Mode                 | When                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `auto`               | The built-in default in the terminal (v2.1.284+). A classifier approves routine work and blocks risky actions |
+| `manual` (`default`) | Unknown repo, first session, risky changes. You approve every unlisted call                                   |
+| `acceptEdits`        | Trusted repo, trusted task, you'll review the diff                                                            |
+| `plan`               | You want Claude to plan before acting                                                                         |
+| `bypassPermissions`  | Only in ephemeral sandboxes/containers                                                                        |
+
+See [permission-modes.md](permission-modes.md) for why this template doesn't
+pin a mode.
+
+## Reviewing a branch: `/code-review` vs `/pr-review`
+
+- **`/code-review [level] [pr#]`** is built in. It reviews the current diff
+  or a PR at the effort level you choose, for example `/code-review high`.
+  `/code-review ultra` runs a deep review in the cloud. `--fix` applies the
+  findings, `--comment` posts them as inline PR comments, and
+  `--max-findings <n>|all` changes how many are reported (v2.1.288).
+  Since v2.1.223, `/review` is an alias of it.
+- **`/pr-review [pr#]`** is the template's command. It runs the
+  `pr-reviewer` subagent, which tags each finding with a severity and
+  posts one structured write-up. It used to be called `/review` and was
+  renamed so it no longer shadows the built-in alias.
 
 ## Reviewing Claude's output
 
-- **Trust but verify.** Claude reports what it *intended* to do; always
+- **Trust but verify.** Claude reports what it _intended_ to do; always
   check the diff.
 - **Don't merge what you don't understand.** Ask "/explain <path>" if a
   change is opaque.
