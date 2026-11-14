@@ -33,6 +33,18 @@ the status line or the permission rules. Those live in
 4. **Start a session** — `claude` in the repo root.
 5. **Try a command** — `/analyze-project`, `/pr-review`, or `/debug`.
 
+## Feature films
+
+Short motion-graphics films of new Claude Code features, recorded from the
+real `claude` CLI by the [Feature Showcase Pipeline](showcase/README.md).
+Full gallery: [docs/features](docs/features/README.md).
+
+<!-- showcase:start -->
+<table>
+<tr><td align="center" valign="top"><a href="docs/features/redact-tool-output.md"><img src="docs/features/redact-tool-output/poster.png" width="360" alt="Redact Secrets"><br><b>Redact Secrets</b></a><br><sub>v2.1.122 · hooks</sub><br><sub>Your hook rewrites tool output. Secrets never reach the model.</sub></td></tr>
+</table>
+<!-- showcase:end -->
+
 ## What's inside
 
 ### Slash commands (12)
@@ -97,6 +109,7 @@ template's `pr-reviewer` subagent and `/code-review` for the built-in review.
 docs/                best-practices, permission-modes, hooks-cookbook, plugins, agent-sdk, integrations
 scripts/             hook scripts + log analyzer + CI review
 sdk/                 TypeScript + Python SDK starters
+showcase/            Feature Showcase Pipeline: spec.yaml → real recording → Remotion film + docs page
 CLAUDE.md            persistent system prompt
 ```
 

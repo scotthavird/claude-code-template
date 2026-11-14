@@ -1,0 +1,6 @@
+packages:
+  - showcase
+onlyBuiltDependencies:
+  - node-pty
+  - esbuild
+  - "@remotion/compositor-darwin-arm64"
