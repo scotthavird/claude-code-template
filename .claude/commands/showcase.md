@@ -38,9 +38,11 @@ One `showcase/features/<slug>/spec.yaml` + `fixture/` becomes a 16:9 hero film,
 8. **Docs:** `pnpm --dir showcase docs --slug <slug>`.
 9. **Report** the output paths and sizes from `showcase/out/<slug>/manifest.json`,
    the spend from `showcase/features/<slug>/takes/spend.json`, and the director's verdict.
-   Remind the user that MP4/WebM go to a GitHub Release (`gh release create showcase-<slug> …`,
-   command in the generated docs page) and only `docs/features/<slug>/{loop.gif,poster.png}`
-   are committed. Offer `/commit` and `/pr`.
+   Remind the user that MP4/WebM/VTT go to Havoptic's shared R2 media bucket
+   (`pnpm --dir showcase upload --slug <slug>`, served from
+   `https://media.havoptic.com/showcase/claude-code-template/<slug>/`) and only
+   `docs/features/<slug>/{loop.gif,poster.png}` are committed. Uploading publishes
+   the files publicly, so confirm with the user before running it. Offer `/commit` and `/pr`.
 
 ## Rules
 

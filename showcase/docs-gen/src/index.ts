@@ -45,8 +45,13 @@ const repoUrl = (() => {
   );
 })();
 
-const releaseBase = (slug: string) =>
-  `${repoUrl}/releases/download/showcase-${slug}`;
+// Films are served from Havoptic's shared R2 media bucket
+// (key layout: showcase/<repo>/<slug>/<file>). Override with SHOWCASE_MEDIA_BASE.
+const repoName = repoUrl.split("/").pop() ?? "repo";
+const MEDIA_BASE =
+  process.env.SHOWCASE_MEDIA_BASE ??
+  `https://media.havoptic.com/showcase/${repoName}`;
+const releaseBase = (slug: string) => `${MEDIA_BASE}/${slug}`;
 
 const mmss = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -107,10 +112,10 @@ function page(
   );
   lines.push("");
   lines.push(
-    `<!-- Release assets live under the tag showcase-${slug}; upload them with:`,
+    `<!-- Film files live in the R2 bucket behind ${MEDIA_BASE}; upload them with:`,
   );
   lines.push(
-    `     gh release create showcase-${slug} showcase/out/${slug}/{hero-16x9.mp4,hero.webm,social-9x16.mp4,social-1x1.mp4,captions.vtt} --title "${s.name ?? s.title} (film)" -->`,
+    `     pnpm --dir showcase upload --slug ${slug} -->`,
   );
   lines.push("");
   lines.push(`**${s.tagline}**`);
