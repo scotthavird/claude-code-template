@@ -47,10 +47,11 @@ Full gallery: [docs/features](docs/features/README.md).
 
 ## What's inside
 
-### Slash commands (12)
+### Slash commands (14)
 
 `/analyze-project` `/commit` `/pr` `/test` `/lint-fix` `/pr-review`
 `/security-audit` `/debug` `/refactor` `/explain` `/doc` `/implement-issue`
+`/showcase` `/fix-until-green`
 
 `/pr-review` was called `/review` until v2.1.223, when Claude Code made the
 built-in `/review` an alias of `/code-review`. Use `/pr-review` for the
@@ -74,10 +75,19 @@ template's `pr-reviewer` subagent and `/code-review` for the built-in review.
 
 - **Format on save** — Prettier / Ruff / gofmt / rustfmt
 - **Block dangerous bash** — destructive patterns, force-push to main, pipe-to-shell (with quote/comment-aware matching)
-- **Inject context on session start** — branch, commits, open PRs
+- **Inject context on session start** — branch, commits, open PRs, and names the session after the branch (`sessionTitle`, v2.1.152+)
+- **Notify when an agent needs you** — background agents and permission prompts ping the desktop via `terminalSequence` (OSC 9/777) or osascript/notify-send
 - **Redact secrets from tool output** — uses v2.1.122 `updatedToolOutput` to scrub keys/JWTs/PATs before the model sees them
 - **PreCompact checkpoint** — saves session state before compaction drops context (v2.1.105+)
 - **Session cost on stop** — total cost plus per-tool `duration_ms` breakdown (v2.1.121+)
+
+### Parallel and background agents
+
+- [`docs/agent-view.md`](docs/agent-view.md) — `claude agents`, `claude --bg`, `/bg`, `/fork` vs `/subtask`, worktree isolation, cleanup
+- `scripts/agents-status.sh` — `claude agents --json` as a table, a tmux status line (`--short`) or a blocked list (`--blocked`)
+- `worktree.baseRef: "head"` — new worktrees keep your unpushed commits
+- [`docs/cross-session-messaging.md`](docs/cross-session-messaging.md) — sessions messaging each other, and why relayed messages carry no authority
+- `/fix-until-green` — sets up a `/goal` that keeps Claude fixing until the test suite passes
 
 ### CI/CD
 
@@ -106,8 +116,8 @@ template's `pr-reviewer` subagent and `/code-review` for the built-in review.
 .devcontainer/       container + firewall
 .github/workflows/   Claude Code CI
 .mcp.json            filesystem, memory, git, fetch
-docs/                best-practices, permission-modes, hooks-cookbook, plugins, agent-sdk, integrations
-scripts/             hook scripts + log analyzer + CI review
+docs/                best-practices, permission-modes, hooks-cookbook, agent-view, cross-session-messaging, plugins, agent-sdk, integrations
+scripts/             hook scripts + agents-status + log analyzer + CI review
 sdk/                 TypeScript + Python SDK starters
 showcase/            Feature Showcase Pipeline: spec.yaml → real recording → Remotion film + docs page
 CLAUDE.md            persistent system prompt
@@ -118,6 +128,8 @@ CLAUDE.md            persistent system prompt
 - [Best practices](docs/best-practices.md)
 - [Permission modes](docs/permission-modes.md)
 - [Hooks cookbook](docs/hooks-cookbook.md)
+- [Agent view and background sessions](docs/agent-view.md)
+- [Cross-session messaging](docs/cross-session-messaging.md)
 - [Plugins](docs/plugins.md)
 - [Agent SDK](docs/agent-sdk.md)
 - [Integrations](docs/integrations.md)

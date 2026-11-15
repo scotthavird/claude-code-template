@@ -33,7 +33,7 @@ with top-level component keys:
 
 | Component      | Manifest key                                               | Location                                                    |
 | -------------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
-| Slash commands | `commands`                                                 | `.claude/commands/` (12)                                    |
+| Slash commands | `commands`                                                 | `.claude/commands/` (14)                                    |
 | Subagents      | `agents` (one entry per file; directories aren't accepted) | `.claude/agents/*.md` (7)                                   |
 | Skills         | `skills`                                                   | `.claude/skills/` (7)                                       |
 | Output styles  | `outputStyles`                                             | `.claude/output-styles/*.md` (3)                            |

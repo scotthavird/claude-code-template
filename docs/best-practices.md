@@ -55,6 +55,67 @@ pin a mode.
   posts one structured write-up. It used to be called `/review` and was
   renamed so it no longer shadows the built-in alias.
 
+## Keep going until done: `/goal`
+
+`/goal <condition>` (v2.1.139+) keeps Claude taking turns until the
+condition holds. After every turn a separate small, fast model reads the
+conversation and decides "met", "not yet" (Claude continues, guided by the
+reason) or "impossible" (the goal clears). It replaces typing "keep going"
+five times.
+
+```text
+/goal `npm test` exits 0 with every test passing. Don't skip or weaken tests. Or stop after 20 turns.
+```
+
+- **Write a checkable condition.** The evaluator doesn't run commands or
+  read files. It judges what Claude showed in the conversation, so name
+  the proof: "`npm test` exits 0", "`git status` is clean".
+- **One end state, plus constraints.** Say what must not change on the
+  way ("no other test file is modified").
+- **Bound it.** Add "or stop after 20 turns". The condition can be up to
+  4,000 characters.
+- **Pair it with auto mode.** A goal doesn't change the permission mode.
+  In Manual mode Claude still asks before each unlisted tool call.
+- `/goal` alone shows status (turns, tokens, the evaluator's last
+  reason). `/goal clear` stops it. A goal survives `--resume`.
+- Headless: `claude -p "/goal CHANGELOG.md has an entry for every PR merged this week"`
+  runs the loop to completion in one invocation. Add
+  `--output-format stream-json --verbose` to watch progress.
+- While a subagent or background shell is still running, evaluation waits.
+  After 30 minutes of waiting Claude checks in on that work;
+  `CLAUDE_CODE_GOAL_CHECKIN_MINUTES` changes the interval and `0` turns
+  check-ins off.
+
+This template's `/fix-until-green [test-command]` does the setup for the
+most common goal: it finds the test command, records the failing
+baseline, flags tests that will stall the loop (network, secrets,
+services), and hands back a ready-to-paste `/goal` line. It stops there,
+because a custom command's text is a prompt to Claude and can't run a
+built-in command like `/goal` itself.
+
+`/goal` vs the alternatives:
+
+| Approach  | Next turn starts when      | Stops when                                                        |
+| --------- | -------------------------- | ----------------------------------------------------------------- |
+| `/goal`   | The previous turn finishes | The evaluator says met or impossible, or `/goal clear`            |
+| `/loop`   | A time interval elapses    | You stop it, or Claude decides it's done                          |
+| Stop hook | The previous turn finishes | Your script or prompt decides (applies to every session in scope) |
+
+## Run sessions in parallel
+
+- Dispatch independent tasks as background sessions (`claude --bg`, or
+  type them into `claude agents`) and step in only when a row needs you.
+  See [agent-view.md](agent-view.md).
+- `/fork <instruction>` tries a second approach from the same context in
+  its own session and worktree, while you keep working.
+- Let the notification hook ping you rather than watching the list:
+  `scripts/hooks/notify-agent.sh` handles `agent_needs_input` and
+  `agent_completed`.
+- When one session learns something another needs, have Claude message
+  it. See [cross-session-messaging.md](cross-session-messaging.md).
+- Every session spends quota on its own. Ten in parallel cost about ten
+  times as much as one.
+
 ## Reviewing Claude's output
 
 - **Trust but verify.** Claude reports what it _intended_ to do; always

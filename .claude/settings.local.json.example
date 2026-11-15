@@ -19,6 +19,9 @@
 
   "// AUTO_MODE": "Don't put an autoMode block here: the classifier ignores autoMode in .claude/settings.json and .claude/settings.local.json. Put it in ~/.claude/settings.json, or run /auto-mode-setup, which writes it there. See docs/permission-modes.md.",
 
+  "// CROSS_SESSION": "Messages from your other Claude Code sessions (v2.1.224+): accept | hold | refuse. Unset = decided per message from the two sessions' permission modes. A project/local value only applies when it is stricter than your user settings, so 'accept' here does nothing. dialogExpiry is user/managed-only and has no effect here. See docs/cross-session-messaging.md.",
+  "// crossSessionInbound": "hold",
+
   "// ADDITIONAL_DIRS": "Let Claude also read code outside the repo (monorepos, shared libs).",
   "additionalDirectories": [
     "~/src/shared-libs",

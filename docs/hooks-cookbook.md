@@ -12,18 +12,18 @@ See the [official hooks reference](https://code.claude.com/docs/en/hooks).
 
 ## Events
 
-| Event                | When                               | Can block?                | Available since                       |
-| -------------------- | ---------------------------------- | ------------------------- | ------------------------------------- |
-| `SessionStart`       | New session opens                  | no                        | base                                  |
-| `UserPromptSubmit`   | User sends a prompt                | yes (rare)                | base                                  |
-| `PreToolUse`         | Before Claude calls a tool         | yes                       | base                                  |
-| `PostToolUse`        | After Claude calls a tool          | no, but can mutate output | base; `updatedToolOutput` in v2.1.122 |
-| `PostToolUseFailure` | After a tool call errored          | no                        | recent                                |
-| `PreCompact`         | Before context is compacted        | yes                       | v2.1.105                              |
-| `PermissionDenied`   | Auto-mode classifier denied a call | no                        | v2.1.89                               |
-| `TaskCreated`        | A Task was created via TaskCreate  | no                        | v2.1.84                               |
-| `Notification`       | System notification                | no                        | base                                  |
-| `Stop`               | Session ends                       | no                        | base                                  |
+| Event                | When                               | Can block?                | Available since                                                 |
+| -------------------- | ---------------------------------- | ------------------------- | --------------------------------------------------------------- |
+| `SessionStart`       | New session opens                  | no                        | base                                                            |
+| `UserPromptSubmit`   | User sends a prompt                | yes (rare)                | base                                                            |
+| `PreToolUse`         | Before Claude calls a tool         | yes                       | base                                                            |
+| `PostToolUse`        | After Claude calls a tool          | no, but can mutate output | base; `updatedToolOutput` in v2.1.122                           |
+| `PostToolUseFailure` | After a tool call errored          | no                        | recent                                                          |
+| `PreCompact`         | Before context is compacted        | yes                       | v2.1.105                                                        |
+| `PermissionDenied`   | Auto-mode classifier denied a call | no                        | v2.1.89                                                         |
+| `TaskCreated`        | A Task was created via TaskCreate  | no                        | v2.1.84                                                         |
+| `Notification`       | System notification                | no                        | base; `agent_needs_input` / `agent_completed` types in v2.1.198 |
+| `Stop`               | Session ends                       | no                        | base                                                            |
 
 ## Recipes
 
@@ -42,8 +42,29 @@ like `rm -rf /`, force-push to main, pipe-to-shell from the internet.
 ### 3. Inject project context at session start
 
 See [`scripts/hooks/inject-context.sh`](../scripts/hooks/inject-context.sh).
-Wired to `SessionStart` with matcher `startup`. Prints branch, recent
-commits, dirty file count, open PRs to stdout — injected into the session.
+Wired to `SessionStart` with matcher `startup`. Collects branch, recent
+commits, dirty file count and open PRs, and returns them as
+`hookSpecificOutput.additionalContext`. It also names the session after
+the branch with `hookSpecificOutput.sessionTitle` (v2.1.152+), which has
+the same effect as `/rename`: the name shows in the prompt box, `/resume`,
+agent view rows and `@` mentions for [cross-session messaging](cross-session-messaging.md).
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "## Session context (auto-injected)\n\nBranch: `feature/auth-refactor` ...",
+    "sessionTitle": "feature/auth-refactor"
+  }
+}
+```
+
+It skips the title when the payload already has a `session_title` (set by
+`--name`, `/rename` or another hook), in background sessions
+(`CLAUDE_JOB_DIR` is set; agent view names those from the prompt), on the
+default branch, on a detached HEAD, and when `INJECT_CONTEXT_NO_TITLE=1`.
+Without `jq` it falls back to printing plain text, which SessionStart also
+adds to the context. Tests: `bash scripts/hooks/test-inject-context.sh`.
 
 ### 4. Surface session cost on exit (with per-tool timing)
 
@@ -69,6 +90,51 @@ v2.1.122 `hookSpecificOutput.updatedToolOutput` field — the hook rewrites
 the tool result the model sees, replacing secret-shaped strings (API
 keys, JWTs, AWS access keys, GitHub PATs, Slack tokens) with
 `[REDACTED-*]` markers. Fail-open: leaves output untouched on parse error.
+
+### 7. Desktop notifications for background agents
+
+See [`scripts/hooks/notify-agent.sh`](../scripts/hooks/notify-agent.sh).
+Wired to `Notification` with matcher
+`permission_prompt|idle_prompt|elicitation_dialog|agent_needs_input|agent_completed`.
+`agent_needs_input` and `agent_completed` (v2.1.198+) fire while
+[agent view](agent-view.md) is open, when a background session starts
+waiting on you or finishes.
+
+Hooks have no controlling terminal, so writing an escape sequence to
+`/dev/tty` fails. Since v2.1.141 a hook can return it in
+`terminalSequence` and Claude Code writes it for you:
+
+```json
+{
+  "terminalSequence": "\u001b]9;Agent finished · my-app: flaky-test-fix finished\u0007"
+}
+```
+
+Claude Code accepts only OSC `0`/`1`/`2` (titles), `9` (iTerm2, WezTerm,
+Windows Terminal, ConEmu), `99` (Kitty), `777` (urxvt, Ghostty, Warp) and
+a bare BEL. Anything else, including OSC 8 links and colors, makes it
+ignore the field. It's written only in interactive sessions (not `-p` or
+the SDK) and only from hooks that aren't `async`. Notification hooks
+can't block, and Claude Code discards their `systemMessage`, but
+`terminalSequence` still fires.
+
+The script picks a method per terminal:
+
+| Terminal                             | Method                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| WezTerm, Windows Terminal, ConEmu    | OSC 9                                                                    |
+| Warp, urxvt                          | OSC 777                                                                  |
+| iTerm2, Ghostty, Kitty               | Nothing. `preferredNotifChannel: "auto"` already notifies there natively |
+| Terminal.app, VS Code, anything else | `osascript` (macOS) or `notify-send` (Linux), else a bell                |
+
+Set `NOTIFY_AGENT_METHOD` (a variable of this script) to `osc9`, `osc777`,
+`osc99`, `desktop`, `bell` or `none` to override it. In tmux 3.3+, add
+`set -g allow-passthrough on` to `~/.tmux.conf` so OSC sequences reach
+the outer terminal. The message is stripped of control characters before
+it goes into the sequence, and `;` is kept out of OSC 777 fields.
+
+Tests: `bash scripts/hooks/test-notify-agent.sh` (stubs `osascript` and
+`notify-send`, so nothing pops up).
 
 ### Conditional `if` field on hooks (v2.1.85+)
 
@@ -129,7 +195,7 @@ side. Check your own hooks against them.
 | v2.1.214            | SessionStart reports `source: "fork"` for forked sessions, which used to be `"resume"`                                                                      | Matchers on `resume` no longer fire for forks                                                   |
 | v2.1.243            | `if` rules like `Bash(cat *)` no longer fire on unrelated commands that contain `$()` or backticks                                                          | —                                                                                               |
 | v2.1.288            | PreToolUse/PermissionRequest hooks whose matching failed, or whose tool input couldn't be serialized, are no longer skipped. The call is blocked instead    | Fail-closed by default for those edge cases                                                     |
-| v2.1.299            | `UserPromptSubmit` runs **before** a skill or custom slash command expands, so blocking the prompt also stops the command's embedded `!` shell commands     | Expect the unexpanded `/command args` prompt, not the expanded text                            |
+| v2.1.299            | `UserPromptSubmit` runs **before** a skill or custom slash command expands, so blocking the prompt also stops the command's embedded `!` shell commands     | Expect the unexpanded `/command args` prompt, not the expanded text                             |
 | v2.1.300            | `updatedInput` from PreToolUse/PermissionRequest is validated like Claude's own input. Unknown keys are dropped, and input the tool rejects denies the call | Only return fields the tool's schema knows                                                      |
 | v2.1.302 / v2.1.312 | At most 12 prompt or agent hooks of one event run at once, and at most 24 per session including subagents. A `timeout` under 1s counts as 1s                | Command hooks are unaffected                                                                    |
 | v2.1.314            | `if` conditions like `Monitor(tail *)` match the Monitor tool's shell commands the same way `Bash(tail *)` matches Bash                                     | —                                                                                               |
@@ -172,8 +238,11 @@ All hook payloads share these fields:
 ## Gotchas
 
 - Hook stdout is **injected into the conversation** for `SessionStart` and
-  `UserPromptSubmit`. For other events it's ignored — use stderr for
-  anything the user should see.
+  `UserPromptSubmit`. For other events plain text is ignored — use stderr
+  for anything the user should see. JSON output is still read on every
+  event, which is how `terminalSequence` works from a `Notification` hook.
+- Don't write to `/dev/tty` from a hook; there is no controlling terminal.
+  Return `terminalSequence` instead (recipe 7).
 - The default timeout is 600s for command, http and `mcp_tool` hooks.
   It drops to 30s on `UserPromptSubmit` and the model-switch events, and
   to 10s on `MessageDisplay`. Prompt hooks get 30s and agent hooks 60s.

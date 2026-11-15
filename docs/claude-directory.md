@@ -43,6 +43,33 @@ Within the same tier, later wins (`settings.local.json` beats `settings.json`).
 
 `.claude/settings.local.json` is gitignored in this template's `.gitignore`.
 
+## Worktrees: `.claude/worktrees/` and `worktree.baseRef`
+
+`claude --worktree`, the `EnterWorktree` tool, subagents with
+`isolation: worktree`, background sessions and `/fork` copies create git
+worktrees under `.claude/worktrees/`. That directory is gitignored here.
+
+`.claude/settings.json` sets:
+
+```json
+"worktree": {
+  "baseRef": "head"
+}
+```
+
+so new worktrees branch from your local `HEAD`, unpushed commits
+included. Claude Code's default, `"fresh"`, branches from
+`origin/<default-branch>` instead, which silently leaves out work you
+haven't pushed. That surprises people who background a session to
+"finish this branch". Switch back to `"fresh"` if your parallel sessions
+mostly start unrelated work from a clean `main`. The key accepts only
+those two values, not a branch name (v2.1.133+). See
+[agent-view.md](agent-view.md#worktreebaseref-what-new-worktrees-start-from).
+
+Because JSON has no comments, the explanation also sits in the
+`"// worktree"` key next to it. Claude Code ignores keys it doesn't know,
+the same trick `settings.local.json.example` uses.
+
 ## See also
 
 - [Official .claude directory doc](https://code.claude.com/docs/en/claude-directory)

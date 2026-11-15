@@ -56,6 +56,11 @@
 
   "prUrlTemplate": "https://github.com/{owner}/{repo}/pull/{number}",
 
+  "// worktree": "baseRef 'head' branches new worktrees (claude --worktree, EnterWorktree, isolated subagents, background sessions and /fork copies) from your local HEAD, so unpushed commits and feature-branch work come along. The default 'fresh' branches from origin/<default-branch> and leaves them out. See docs/agent-view.md.",
+  "worktree": {
+    "baseRef": "head"
+  },
+
   "hooks": {
     "SessionStart": [
       {
@@ -165,6 +170,16 @@
             "type": "command",
             "command": "bash scripts/log-hook-event.sh",
             "description": "Log notifications"
+          }
+        ]
+      },
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog|agent_needs_input|agent_completed",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/notify-agent.sh",
+            "description": "Desktop ping via terminalSequence (OSC 9/777) or osascript/notify-send when a session or background agent needs you or finishes"
           }
         ]
       }
