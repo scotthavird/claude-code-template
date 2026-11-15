@@ -3,12 +3,12 @@
 
 > **Claude Code v2.1.122** · hooks · [changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md)
 
-[![Redact Secrets: Your hook rewrites tool output. Secrets never reach the model.](redact-tool-output/loop.gif)](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/hero-16x9.mp4)
+[![Redact Secrets: Your hook rewrites tool output. Secrets never reach the model.](redact-tool-output/loop.gif)](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/hero-16x9.mp4)
 
-▶ **Watch the 35s film:** [MP4 1080p](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/hero-16x9.mp4) (10.3 MB) · [WebM](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/hero.webm) (4.8 MB) · [9:16](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/social-9x16.mp4) · [1:1](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/social-1x1.mp4) · [captions](https://github.com/scotthavird/claude-code-template/releases/download/showcase-redact-tool-output/captions.vtt)
+▶ **Watch the 35s film:** [MP4 1080p](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/hero-16x9.mp4) (10.3 MB) · [WebM](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/hero.webm) (4.8 MB) · [9:16](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/social-9x16.mp4) · [1:1](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/social-1x1.mp4) · [captions](https://media.havoptic.com/showcase/claude-code-template/redact-tool-output/captions.vtt)
 
-<!-- Release assets live under the tag showcase-redact-tool-output; upload them with:
-     gh release create showcase-redact-tool-output showcase/out/redact-tool-output/{hero-16x9.mp4,hero.webm,social-9x16.mp4,social-1x1.mp4,captions.vtt} --title "Redact Secrets (film)" -->
+<!-- Film files live in the R2 bucket behind https://media.havoptic.com/showcase/claude-code-template; upload them with:
+     pnpm --dir showcase upload --slug redact-tool-output -->
 
 **Your hook rewrites tool output. Secrets never reach the model.**
 

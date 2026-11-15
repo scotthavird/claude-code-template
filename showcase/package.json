@@ -17,7 +17,9 @@
     "build": "tsx recorder/src/cli.ts build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "doctor": "tsx recorder/src/cli.ts doctor",
-    "screen": "tsx recorder/src/cli.ts screen"
+    "screen": "tsx recorder/src/cli.ts screen",
+    "upload": "bash scripts/upload.sh",
+    "setup": "bash scripts/ensure-browser.sh"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

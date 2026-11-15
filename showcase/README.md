@@ -37,7 +37,7 @@ Re-rendering never touches the API: everything after `record` runs from `cast.ca
 
 ```bash
 pnpm install                                  # once (pnpm@10.10.0, see packageManager)
-pnpm --dir showcase exec remotion browser ensure
+pnpm --dir showcase setup
 
 pnpm --dir showcase new <slug>                # scaffold spec.yaml + fixture/ from schema/template
 pnpm --dir showcase validate --slug <slug>    # zod schema + marker cross-checks
@@ -48,6 +48,7 @@ pnpm --dir showcase screen --slug <slug> --at done+0.5   # print the screen to w
 pnpm --dir showcase still --slug <slug> [--out dir]      # QA stills for every scene/callout/aspect
 pnpm --dir showcase render --slug <slug> [--only gif]    # all outputs → out/<slug>/
 pnpm --dir showcase docs --slug <slug>        # docs page + gallery
+pnpm --dir showcase upload --slug <slug>      # MP4/WebM/VTT → R2 (media.havoptic.com); publishes publicly
 pnpm --dir showcase build --slug <slug>       # compile + render + docs (no recording)
 pnpm --dir showcase studio                    # Remotion Studio on http://localhost:3100
 ```
@@ -88,5 +89,5 @@ Tips:
 - **Replay proxy** (`recorder/src/proxy.ts` has the interface and the steps to add it).
 - **CI** (`.github/workflows/showcase.yml`): replay-only render on PRs, `workflow_dispatch` live record.
   Because renders already run from the committed `cast.cast`, CI can render without the proxy:
-  `pnpm install && pnpm --dir showcase exec remotion browser ensure && pnpm --dir showcase build --slug <slug>`.
+  `pnpm install && pnpm --dir showcase setup && pnpm --dir showcase build --slug <slug>`.
 - **VHS fallback recorder** (`recorder.engine: vhs`) and `/showcase-since`.
