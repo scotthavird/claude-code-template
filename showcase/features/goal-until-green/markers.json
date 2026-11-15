@@ -1,0 +1,13 @@
+{
+  "take": 2,
+  "markers": {
+    "prompt": 2.817923,
+    "submitted": 5.568111,
+    "goal-set": 5.568474,
+    "turn-one": 12.321539,
+    "achieved": 20.300367,
+    "done": 22.290069,
+    "end": 23.290379
+  },
+  "spendUsd": 0.03988885
+}

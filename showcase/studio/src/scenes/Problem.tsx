@@ -23,11 +23,12 @@ const IS_SECRET = new RegExp(`^${SECRETISH.source}$`);
 
 const BeforeTerminal: React.FC<{
   lines: string[];
+  title: string;
   u: number;
   width: number;
   danger: number;
   dim: number;
-}> = ({ lines, u, width, danger, dim }) => {
+}> = ({ lines, title, u, width, danger, dim }) => {
   const frame = useCurrentFrame();
   const shake =
     danger > 0 && danger < 1 ? Math.sin(frame * 2.3) * 7 * (1 - danger) * u : 0;
@@ -40,7 +41,7 @@ const BeforeTerminal: React.FC<{
       }}
     >
       <Window
-        title="before: no hook"
+        title={title}
         width={width}
         height={(lines.length * 54 + 44) * u + 50 * u}
         padX={28 * u}
@@ -194,6 +195,7 @@ export const Problem: React.FC<{ film: FilmData }> = ({ film }) => {
         >
           <BeforeTerminal
             lines={lines}
+            title={film.spec.beforeTitle ?? "before: no hook"}
             u={u}
             width={termW}
             danger={danger}
