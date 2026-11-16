@@ -59,6 +59,10 @@ for f in "$ROOT"/.claude/agents/*.md; do
 done
 echo
 echo "Built-ins worth knowing: /code-review (Claude Code's own diff review;"
-echo "  /review is its alias since v2.1.223), /permissions, /auto-mode-setup."
+echo "  /review is its alias since v2.1.223), /permissions, /auto-mode-setup,"
+echo "  /goal <condition> (keep working until it holds), /fork and /bg."
+echo
+echo "Parallel agents: claude agents (agent view), claude --bg \"<task>\","
+echo "  scripts/agents-status.sh [--short|--blocked] — see docs/agent-view.md."
 echo
 echo "Docs: $ROOT/docs/"
