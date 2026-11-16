@@ -62,7 +62,7 @@ export const EnableCard: React.FC<{ film: FilmData; condensed?: boolean }> = ({
           transform: `translateY(${(1 - head) * 20}px)`,
         }}
       >
-        One block of config.
+        {e.heading ?? "One block of config."}
       </div>
       <div
         style={{
@@ -73,7 +73,7 @@ export const EnableCard: React.FC<{ film: FilmData; condensed?: boolean }> = ({
           opacity: head,
         }}
       >
-        Add it to{" "}
+        {e.lead ?? "Add it to"}{" "}
         <span
           style={{ fontFamily: fonts.mono, color: color.ink, fontSize: 27 * u }}
         >

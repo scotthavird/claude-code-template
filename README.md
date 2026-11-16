@@ -41,7 +41,7 @@ Full gallery: [docs/features](docs/features/README.md).
 
 <!-- showcase:start -->
 <table>
-<tr><td align="center" valign="top"><a href="docs/features/redact-tool-output.md"><img src="docs/features/redact-tool-output/poster.png" width="360" alt="Redact Secrets"><br><b>Redact Secrets</b></a><br><sub>v2.1.122 · hooks</sub><br><sub>Your hook rewrites tool output. Secrets never reach the model.</sub></td></tr>
+<tr><td align="center" valign="top"><a href="docs/features/goal-until-green.md"><img src="docs/features/goal-until-green/poster.png" width="360" alt="/goal"><br><b>/goal</b></a><br><sub>v2.1.139 · commands</sub><br><sub>Set the finish line. Claude keeps working until it's true.</sub></td><td align="center" valign="top"><a href="docs/features/redact-tool-output.md"><img src="docs/features/redact-tool-output/poster.png" width="360" alt="Redact Secrets"><br><b>Redact Secrets</b></a><br><sub>v2.1.122 · hooks</sub><br><sub>Your hook rewrites tool output. Secrets never reach the model.</sub></td></tr>
 </table>
 <!-- showcase:end -->
 

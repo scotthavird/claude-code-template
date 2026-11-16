@@ -85,6 +85,10 @@
           "maxItems": 5,
           "default": []
         },
+        "beforeTitle": {
+          "type": "string",
+          "maxLength": 40
+        },
         "recorder": {
           "type": "object",
           "properties": {
@@ -559,6 +563,14 @@
             },
             "install": {
               "type": "string"
+            },
+            "heading": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "lead": {
+              "type": "string",
+              "maxLength": 40
             },
             "caption": {
               "type": "string",

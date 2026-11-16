@@ -140,6 +140,8 @@ export const featureSchema = z
     problem: z.array(z.string().max(60)).min(2).max(3),
     /** Lines for the Problem scene's small "before" terminal (the pain, shown literally). */
     before: z.array(z.string().max(70)).max(5).default([]),
+    /** Window title of the Problem scene's "before" terminal (default "before: no hook"). */
+    beforeTitle: z.string().max(40).optional(),
     recorder: z
       .object({
         engine: z.enum(["pty", "vhs"]).default("pty"),
@@ -205,7 +207,10 @@ export const featureSchema = z
         hold: z
           .array(
             z
-              .object({ at: markerName, seconds: z.number().positive().max(12) })
+              .object({
+                at: markerName,
+                seconds: z.number().positive().max(12),
+              })
               .strict(),
           )
           .default([]),
@@ -219,6 +224,10 @@ export const featureSchema = z
         code: z.string().min(1),
         highlight: z.array(z.number().int().positive()).default([]),
         install: z.string().optional(),
+        /** Headline of the How-to-enable scene (default "One block of config."). */
+        heading: z.string().max(40).optional(),
+        /** Text before `file` (default "Add it to"); e.g. "Type it in" for a slash command. */
+        lead: z.string().max(40).optional(),
         /** Caption for the How-to-enable scene. */
         caption: z.string().max(90).optional(),
       })

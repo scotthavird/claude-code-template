@@ -1,0 +1,156 @@
+# yaml-language-server: $schema=../../schema/feature.schema.json
+slug: goal-until-green
+title: Walk away until it's green
+name: /goal
+version: "2.1.139"
+changelog:
+  url: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+  quote: "Added `/goal` command: set a completion condition and Claude keeps working across turns until it's met."
+category: commands
+tagline: Set the finish line. Claude keeps working until it's true.
+hook: ["Three tests are red.", "You have a meeting in five minutes."]
+problem:
+  - "Claude fixes one test, then stops."
+  - "You type “keep going.” Again. And again."
+  - "/goal keeps it going until the tests pass."
+beforeTitle: "before: re-prompting by hand"
+before:
+  - "> fix the failing tests"
+  - "⏺ Fixed subtotal(). 2 tests still failing."
+  - "> keep going"
+  - "⏺ Fixed applyDiscount(). 1 test still failing."
+  - "> keep going…"
+
+recorder:
+  engine: pty
+  mode: interactive
+  model: haiku
+  permissionMode: acceptEdits
+  budgetUsd: 0.45
+  size: { cols: 92, rows: 26 }
+  repoName: cart
+  settings:
+    permissions:
+      allow: ["Bash", "Read", "Edit"]
+  takes: { max: 2, targetSeconds: 45 }
+
+scenario:
+  - wait: "shortcuts|for help|❯"
+    timeout: 45
+  - idle: 1.0
+  - marker: prompt
+  - type: "/goal node --test passes with 0 failures"
+    cps: 22
+  - sleep: 0.6
+  - key: enter
+  - marker: submitted
+  - wait: "Goal set|goal active"
+    timeout: 30
+  - marker: goal-set
+  - wait: "not yet met|Goal achieved"
+    timeout: 150
+  - marker: turn-one
+  - wait: "Goal achieved"
+    timeout: 200
+  - marker: achieved
+  - idle: 2.0
+    timeout: 60
+  - marker: done
+  - sleep: 1.0
+  - marker: end
+  - expect: "Goal achieved"
+  - expect: "\\d+ turns?"
+
+scrub:
+  - { find: "/private/var/folders/\\S+", replace: "~/demo" }
+  - { find: "/Users/[A-Za-z0-9._-]+", replace: "~" }
+  # Plan usage notices are account-specific and unrelated to the feature: blank them in place.
+  - {
+      find: "You've used \\d+% of your (?:[^\\u001b]|\\u001b\\[\\d+G)*?limit · resets [^\\u001b]*",
+      replace: "                                                                 ",
+    }
+
+edit:
+  in: prompt
+  out: end
+  idleMax: 0.8
+  remap:
+    - { from: goal-set, to: achieved, speed: 4 }
+  hold:
+    - { at: submitted, seconds: 0.8 }
+    - { at: goal-set, seconds: 2.4 }
+    - { at: turn-one, seconds: 2.6 }
+    - { at: done, seconds: 7.0 }
+
+callouts:
+  - at: submitted
+    duration: 0.8
+    kind: keycap
+    keys: ["⏎"]
+    match: "/goal node --test passes with 0 failures"
+    caption: "Give Claude a finish line, not a task"
+  - at: goal-set
+    duration: 2.4
+    kind: highlight
+    match: "Goal set: .*failures"
+    text: "Goal armed"
+    caption: "After every turn, a separate check asks: is the condition met yet?"
+  - at: turn-one
+    duration: 2.6
+    kind: callout
+    match: "◎ /goal active \\(\\d+s\\)"
+    text: "Live: still working on the goal"
+    caption: "No one typed “keep going.” The goal timer keeps running."
+  - at: done
+    duration: 3.6
+    kind: zoom
+    zoom: 1.7
+    match: "Goal achieved \\(.*\\)"
+    text: "3 turns, hands off"
+    caption: "Green in 3 turns, without a single “keep going.”"
+    social: true
+  - at: done
+    offset: 3.6
+    duration: 3.4
+    kind: callout
+    match: "Goal not yet met… continuing"
+    text: "Not met? It takes another turn"
+    caption: "Each time the check fails, Claude continues on its own."
+    social: true
+
+enable:
+  file: any Claude Code session
+  lead: Type it in
+  heading: One command.
+  lang: bash
+  code: |
+    /goal node --test passes with 0 failures
+    /goal         # show the active goal
+    /goal clear   # stop early
+  highlight: [1]
+  caption: "One line sets the goal; /goal clear stops it early"
+
+cta:
+  line: "Stop babysitting. Set the finish line and walk away."
+  command: "/goal <your test command> passes"
+  url: github.com/scotthavird/claude-code-template
+
+outputs: [hero-16x9, hero-webm, social-9x16, social-1x1, gif, poster, captions]
+
+docs:
+  summary: >
+    `/goal <condition>` (Claude Code v2.1.139+) sets a completion condition for
+    the session. Claude starts working right away, and after every turn a separate
+    check decides whether the condition is met. If it isn't, Claude takes another
+    turn on its own; when it is, the goal clears with a summary of elapsed time,
+    turns and tokens. While it runs, the footer shows `/goal active` with a live
+    timer. `/goal` alone shows the active goal and `/goal clear` stops it early.
+    Since v2.1.234 a goal that is waiting on long-running background work also
+    checks in on it after 30 minutes instead of waiting indefinitely.
+  tryIt:
+    - "Update Claude Code to v2.1.139 or later (`claude update`)."
+    - 'To really walk away, pre-approve what it needs so it never stops for a permission prompt (the film used accept-edits mode plus `"permissions": { "allow": ["Bash", "Read", "Edit"] }` in a throwaway repo; narrower rules like `Bash(npm test:*)` work too).'
+    - "In a repo with failing tests, start `claude` and type `/goal npm test passes` (any shell-checkable condition works)."
+    - "Watch the footer: `/goal active` with a timer. Each turn ends with `Goal not yet met… continuing` until the check passes."
+    - "It finishes with `Goal achieved (elapsed · turns · tokens)`. Use `/goal clear` to stop early."
+  related: [docs/best-practices.md, docs/permission-modes.md]

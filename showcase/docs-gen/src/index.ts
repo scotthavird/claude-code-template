@@ -114,9 +114,7 @@ function page(
   lines.push(
     `<!-- Film files live in the R2 bucket behind ${MEDIA_BASE}; upload them with:`,
   );
-  lines.push(
-    `     pnpm --dir showcase upload --slug ${slug} -->`,
-  );
+  lines.push(`     pnpm --dir showcase upload --slug ${slug} -->`);
   lines.push("");
   lines.push(`**${s.tagline}**`);
   lines.push("");
@@ -124,7 +122,7 @@ function page(
   lines.push("");
   lines.push("## How to enable");
   lines.push("");
-  lines.push(`In \`${s.enable.file}\`:`);
+  lines.push(`${s.enable.lead ?? "In"} \`${s.enable.file}\`:`);
   lines.push("");
   lines.push("```" + s.enable.lang);
   lines.push(s.enable.code.replace(/\n$/, ""));

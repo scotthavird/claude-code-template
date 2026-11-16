@@ -1,0 +1,62 @@
+[
+  {
+    "at": "submitted",
+    "kind": "keycap",
+    "match": "/goal node --test passes with 0 failures",
+    "anchor": {
+      "row": 6,
+      "col": 2,
+      "len": 40,
+      "h": 1,
+      "f": 3.150188
+    }
+  },
+  {
+    "at": "goal-set",
+    "kind": "highlight",
+    "match": "Goal set: .*failures",
+    "anchor": {
+      "row": 7,
+      "col": 5,
+      "len": 44,
+      "h": 1,
+      "f": 4.750551000000001
+    }
+  },
+  {
+    "at": "turn-one",
+    "kind": "callout",
+    "match": "◎ /goal active \\(\\d+s\\)",
+    "anchor": {
+      "row": 21,
+      "col": 71,
+      "len": 19,
+      "h": 1,
+      "f": 8.938817250000007
+    }
+  },
+  {
+    "at": "done",
+    "kind": "zoom",
+    "match": "Goal achieved \\(.*\\)",
+    "anchor": {
+      "row": 18,
+      "col": 2,
+      "len": 43,
+      "h": 1,
+      "f": 14.833524250000009
+    }
+  },
+  {
+    "at": "done",
+    "kind": "callout",
+    "match": "Goal not yet met… continuing",
+    "anchor": {
+      "row": 3,
+      "col": 2,
+      "len": 28,
+      "h": 1,
+      "f": 18.333524250000007
+    }
+  }
+]

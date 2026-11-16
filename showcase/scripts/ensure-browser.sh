@@ -11,7 +11,9 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$here"
 
-pnpm exec remotion browser ensure
+# `ensure` itself exits non-zero ("should have downloaded browser") when the
+# extraction is partial, so keep going and repair it below.
+pnpm exec remotion browser ensure || echo "remotion browser ensure failed; checking the extracted binary"
 
 dir="node_modules/.remotion/chrome-headless-shell"
 for zip in "$dir"/chrome-headless-shell-*.zip; do
