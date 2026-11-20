@@ -49,6 +49,7 @@ pnpm --dir showcase still --slug <slug> [--out dir]      # QA stills for every s
 pnpm --dir showcase render --slug <slug> [--only gif]    # all outputs → out/<slug>/
 pnpm --dir showcase docs --slug <slug>        # docs page + gallery
 pnpm --dir showcase upload --slug <slug>      # MP4/WebM/VTT → R2 (media.havoptic.com); publishes publicly
+                                              #   [--only poster.png] [--dry-run]
 pnpm --dir showcase build --slug <slug>       # compile + render + docs (no recording)
 pnpm --dir showcase studio                    # Remotion Studio on http://localhost:3100
 ```
@@ -84,10 +85,30 @@ Tips:
   `edit.remap` speeds up a span (a "4× SPEED" chip is shown so latency is never overstated).
 - Fixture secrets must be obviously fake.
 
+## Publishing from CI
+
+`.github/workflows/showcase-publish.yml` renders a film from its committed
+`cast.cast` and uploads it, so a new film publishes without a laptop:
+
+- a push to `main` that changes `showcase/features/<slug>/cast.cast` or
+  `spec.yaml` publishes each changed slug;
+- `gh workflow run showcase-publish.yml -f slug=<slug> [-f only=poster.png] [-f dry_run=true]`
+  publishes one by hand.
+
+`upload.sh` picks its backend from the environment. With
+`CLOUDFLARE_R2_MEDIA_ACCESS_KEY_ID`, `CLOUDFLARE_R2_MEDIA_SECRET_ACCESS_KEY` and
+`CLOUDFLARE_ACCOUNT_ID` set (repo Actions secrets: an R2 token with Object
+Read & Write on `havoptic-prod-media` only) it uses `aws s3 cp` against
+`https://<account>.r2.cloudflarestorage.com`. Otherwise it uses
+`wrangler r2 object put --remote` (laptop, after `wrangler login`). Wrangler
+can't use the bucket-scoped token: its REST object API answers 401. Both
+paths write the same keys, Content-Type and Cache-Control.
+
 ## Not built yet
 
 - **Replay proxy** (`recorder/src/proxy.ts` has the interface and the steps to add it).
-- **CI** (`.github/workflows/showcase.yml`): replay-only render on PRs, `workflow_dispatch` live record.
+- **CI** (`.github/workflows/showcase.yml`): replay-only render on PRs, `workflow_dispatch` live record
+  (publishing is done, see above).
   Because renders already run from the committed `cast.cast`, CI can render without the proxy:
   `pnpm install && pnpm --dir showcase setup && pnpm --dir showcase build --slug <slug>`.
 - **VHS fallback recorder** (`recorder.engine: vhs`) and `/showcase-since`.

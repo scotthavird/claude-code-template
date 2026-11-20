@@ -19,7 +19,7 @@ as a plugin or forked as a starting point. Everything here aligns with the
 ├── settings.json         hooks, permissions, MCP wiring (shared)
 └── settings.local.json.example  → copy to settings.local.json (gitignored)
 .devcontainer/            devcontainer + egress firewall
-.github/workflows/        claude.yml (@claude mentions) + claude-review.yml (auto-PR review) + plugin-validate.yml
+.github/workflows/        claude.yml (@claude mentions) + claude-review.yml (auto-PR review) + plugin-validate.yml + showcase-publish.yml (film → R2)
 .gitlab-ci.yml            GitLab CI equivalent
 .mcp.json                 project-scoped MCP servers
 docs/                     mirrored condensed versions of key official docs
@@ -192,6 +192,7 @@ network access (e.g. package proxies).
   - `claude.yml` — `@claude` mentions in issues/PRs
   - `claude-review.yml` — automatic review on new PRs
   - `plugin-validate.yml` — `claude plugin validate` on the plugin manifest (no API key needed)
+  - `showcase-publish.yml` — render a showcase film from its `cast.cast` and upload it to R2 over the S3 API (R2 secrets; skips without them)
 - **GitLab CI** (`.gitlab-ci.yml`): equivalent MR review pipeline
 - **Headless** (`scripts/ci-review.sh`): one-shot `claude -p` example
 
