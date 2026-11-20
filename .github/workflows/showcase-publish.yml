@@ -1,0 +1,159 @@
+name: Showcase Publish
+
+# Render a showcase film from its committed cast.cast and upload it to R2
+# (media.havoptic.com). No API key is needed: rendering never records.
+#
+# - push to main that changes showcase/features/<slug>/{cast.cast,spec.yaml}:
+#   publishes each changed slug.
+# - workflow_dispatch: publish one slug by hand, optionally only some files
+#   or as a dry run.
+#
+# Upload auth is an R2 token scoped to the havoptic-prod-media bucket, used
+# over the S3 API (see showcase/scripts/upload.sh). Without those secrets,
+# e.g. in a fork, the upload job is skipped.
+on:
+  push:
+    branches: [main]
+    paths:
+      - showcase/features/*/cast.cast
+      - showcase/features/*/spec.yaml
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Feature slug (showcase/features/<slug>)"
+        required: true
+        type: string
+      only:
+        description: "Upload only these files, space separated (e.g. poster.png). Empty = all"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "Render, then list what would be uploaded without uploading"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      slugs: ${{ steps.slugs.outputs.slugs }}
+      has_creds: ${{ steps.creds.outputs.has_creds }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: slugs
+        env:
+          EVENT: ${{ github.event_name }}
+          INPUT_SLUG: ${{ inputs.slug }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            case "$INPUT_SLUG" in
+              ""|*[!a-z0-9-]*) echo "::error::invalid slug: '$INPUT_SLUG'"; exit 1 ;;
+            esac
+            [ -f "showcase/features/$INPUT_SLUG/cast.cast" ] || { echo "::error::no showcase/features/$INPUT_SLUG/cast.cast"; exit 1; }
+            slugs="$INPUT_SLUG"
+          else
+            if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then BEFORE="$AFTER^"; fi
+            slugs=$(git diff --name-only "$BEFORE" "$AFTER" -- 'showcase/features/*/cast.cast' 'showcase/features/*/spec.yaml' \
+              | cut -d/ -f3 | sort -u \
+              | while read -r s; do [ -f "showcase/features/$s/cast.cast" ] && echo "$s"; done || true)
+          fi
+          json=$(printf '%s\n' "$slugs" | jq -R . | jq -sc 'map(select(length > 0))')
+          echo "slugs: $json"
+          echo "slugs=$json" >> "$GITHUB_OUTPUT"
+
+      - id: creds
+        env:
+          HAS_KEY: ${{ secrets.CLOUDFLARE_R2_MEDIA_ACCESS_KEY_ID != '' && secrets.CLOUDFLARE_R2_MEDIA_SECRET_ACCESS_KEY != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          echo "has_creds=$HAS_KEY" >> "$GITHUB_OUTPUT"
+          [ "$HAS_KEY" = "true" ] || echo "::notice::R2 S3 secrets not set; skipping publish."
+
+  publish:
+    needs: plan
+    if: needs.plan.outputs.has_creds == 'true' && needs.plan.outputs.slugs != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: ${{ fromJSON(needs.plan.outputs.slugs) }}
+    concurrency:
+      group: showcase-publish-${{ matrix.slug }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up Remotion browser
+        run: pnpm --dir showcase setup
+
+      - name: Compile cast
+        run: pnpm --dir showcase compile --slug "$SLUG"
+        env:
+          SLUG: ${{ matrix.slug }}
+
+      - name: Render film
+        # A single `only` file renders just that output; otherwise render all.
+        env:
+          SLUG: ${{ matrix.slug }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          set -euo pipefail
+          args=(--slug "$SLUG")
+          read -r -a files <<< "$ONLY"
+          if [ "${#files[@]}" -eq 1 ]; then
+            case "${files[0]}" in
+              poster.png) args+=(--only poster) ;;
+              hero-16x9.mp4) args+=(--only hero-16x9) ;;
+              hero.webm) args+=(--only hero-webm) ;;
+              social-9x16.mp4) args+=(--only social-9x16) ;;
+              social-1x1.mp4) args+=(--only social-1x1) ;;
+              captions.vtt|captions-social.vtt) args+=(--only captions) ;;
+            esac
+          fi
+          pnpm --dir showcase render "${args[@]}"
+
+      - name: Upload to R2
+        env:
+          SLUG: ${{ matrix.slug }}
+          ONLY: ${{ inputs.only }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_R2_MEDIA_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_MEDIA_ACCESS_KEY_ID }}
+          CLOUDFLARE_R2_MEDIA_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_MEDIA_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+          args=(--slug "$SLUG")
+          for f in $ONLY; do args+=(--only "$f"); done
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          pnpm --dir showcase upload "${args[@]}"
+
+      - name: Summary
+        if: success() && inputs.dry_run != true
+        env:
+          SLUG: ${{ matrix.slug }}
+        run: echo "Published https://media.havoptic.com/showcase/claude-code-template/$SLUG/" >> "$GITHUB_STEP_SUMMARY"

@@ -94,6 +94,7 @@ template's `pr-reviewer` subagent and `/code-review` for the built-in review.
 - `.github/workflows/claude.yml` — `@claude` mentions in issues/PRs
 - `.github/workflows/claude-review.yml` — automatic review on new PRs
 - `.github/workflows/plugin-validate.yml` — `claude plugin validate` on every PR (no API key needed)
+- `.github/workflows/showcase-publish.yml` — render a showcase film and upload it to R2 (push to `main` or `workflow_dispatch`)
 - `.gitlab-ci.yml` — GitLab equivalent
 - `scripts/ci-review.sh` — headless-mode example
 
